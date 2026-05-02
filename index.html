@@ -288,7 +288,11 @@
       <div class="card lg">
         <div class="card-t">
           <span>Projected vs Realized by Month</span>
-          <span class="help">Yellow = projected $ for deals contracted in that month · Green = realized $ for deals closed in that month</span>
+        </div>
+        <div style="font-size:11.5px;color:#6b7280;margin-bottom:12px;line-height:1.5">
+          <b style="color:#a16207">Yellow (Projected):</b> for every deal contracted in that month, sum its projected profit (Listing × 0.9 − Purchase × 1.06; falls back to Target Sale Price). 
+          <b style="color:#10b981">Green (Realized):</b> for every deal closed in that month, sum its realized profit (HUD math, fallback to deal_net_profit).
+          <span style="color:#991818">A bar can go negative if deals were listed below break-even — usually a sign Jonathan needs to renegotiate that deal down or kill it.</span>
         </div>
         <canvas id="c-profit-monthly" height="120"></canvas>
       </div>
@@ -501,6 +505,25 @@ const fmtD = d => !d ? '—' : (typeof d === 'string' ? parseLocalDate(d) : d).t
 const fmtDate = d => !d ? '—' : (typeof d === 'string' ? parseLocalDate(d) : d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'});
 const fmtMonth = d => !d ? '—' : (typeof d === 'string' ? parseLocalDate(d) : d).toLocaleDateString('en-US',{month:'short',year:'numeric'});
 
+// Airtable URL helpers — uses the Airtable Interface that the team already uses
+// (same pattern wired into Slack notifications and Pipedrive customs from the n8n UC Pipeline workflow)
+const AIRTABLE_BASE_ID = 'apptxGfdxuUh9Fjc9';
+const AIRTABLE_DEAL_INTERFACE = 'pagHIC7gPdUKvx46G';
+const AIRTABLE_DEAL_TABLE = 'tblSCPE4M4A2ByjGu';
+function airtableInterfaceUrl(recId) {
+  if (!recId) return null;
+  return `https://airtable.com/${AIRTABLE_BASE_ID}/${AIRTABLE_DEAL_INTERFACE}?JO1h5=${recId}`;
+}
+function airtableRecordUrl(recId) {
+  if (!recId) return null;
+  return `https://airtable.com/${AIRTABLE_BASE_ID}/${AIRTABLE_DEAL_TABLE}/${recId}`;
+}
+function airtableEditLink(recId, label = 'edit in Airtable ↗') {
+  const url = airtableInterfaceUrl(recId);
+  if (!url) return '';
+  return `<a href="${url}" target="_blank" onclick="event.stopPropagation()" style="font-size:11px;color:#3b82f6;text-decoration:none">${label}</a>`;
+}
+
 function inRangeLocal(dateVal, start, end) {
   if (!dateVal) return false;
   const d = parseLocalDate(dateVal);
@@ -653,9 +676,16 @@ function renderPulse(range) {
   const realizedYTDCount = pipeline
     .filter(d => d.profit_bucket === 'REALIZED' && d.actual_close_date && parseLocalDate(d.actual_close_date) >= yearStart).length;
 
-  // Count missing-listing-price warnings
-  const projectedMissing = activeP.filter(d => d.profit_bucket === 'PROJECTED' && d.bucket_profit == null).length;
-  const projectedMissingWarn = projectedMissing > 0 ? `⚠️ ${projectedMissing} deals missing listing price` : '';
+  // Count deals that need a price set (no listing_price AND no target_sale_price)
+  const projectedNoPriceAtAll = activeP.filter(d => 
+    d.profit_bucket === 'PROJECTED' && !d.listing_price && !d.target_sale_price
+  ).length;
+  const projectedTargetOnly = activeP.filter(d => 
+    d.profit_bucket === 'PROJECTED' && !d.listing_price && d.target_sale_price
+  ).length;
+  const projectedMissingWarn = projectedNoPriceAtAll > 0 
+    ? `⚠️ ${projectedNoPriceAtAll} deals need price${projectedTargetOnly > 0 ? ` · ${projectedTargetOnly} on target only` : ''}`
+    : (projectedTargetOnly > 0 ? `${projectedTargetOnly} on target price (no listing)` : '');
 
   document.getElementById('pulse-snapshot').innerHTML = [
     card({
@@ -726,25 +756,33 @@ function renderPulse(range) {
     if (pa !== pb) return (pa < 0 ? 999 : pa) - (pb < 0 ? 999 : pb);
     return parseTimestamp(b.contract_date||0) - parseTimestamp(a.contract_date||0);
   });
-  const activeRows = sortedActive.map(d => `<tr class="row-clickable" onclick="showDealDetail('${d.airtable_record_id}')">
-    <td><b>${d.deal_name||'—'}</b><div class="meta">${d.county||''}, ${d.state||''} · ${fmt1(d.acreage)} ac</div></td>
-    <td><span class="pill-phase">${d.deal_phase||'—'}</span></td>
-    <td><span class="pill-bucket-${d.profit_bucket}">${d.profit_bucket||'—'}</span></td>
-    <td class="num">${fmt$(d.purchase_price)}</td>
-    <td class="num">${d.listing_price ? fmt$(d.listing_price) : '<span class="text-rose">missing</span>'}</td>
-    <td class="num">${fmt$(d.end_buyer_contract_price)}</td>
-    <td class="num"><b>${fmt$(d.bucket_profit)}</b></td>
-    <td class="num">${fmtDate(d.dd_deadline)}</td>
-    <td class="num">${fmtDate(d.close_date)}</td>
-    <td class="num">${fmtDate(d.end_buyer_close_date)}</td>
-  </tr>`).join('');
+  const activeRows = sortedActive.map(d => {
+    // Show price column: prefer listing_price, fall back to target_sale_price, else "missing"
+    let priceCell;
+    if (d.listing_price) priceCell = fmt$(d.listing_price);
+    else if (d.target_sale_price) priceCell = `<span class="text-amber" title="Target Sale Price (not yet listed)">target: ${fmt$(d.target_sale_price)}</span>`;
+    else priceCell = '<span class="text-rose">missing</span>';
+    return `<tr class="row-clickable" onclick="showDealDetail('${d.airtable_record_id}')">
+      <td><b>${d.deal_name||'—'}</b><div class="meta">${d.county||''}, ${d.state||''} · ${fmt1(d.acreage)} ac</div></td>
+      <td><span class="pill-phase">${d.deal_phase||'—'}</span></td>
+      <td><span class="pill-bucket-${d.profit_bucket}">${d.profit_bucket||'—'}</span></td>
+      <td class="num">${fmt$(d.purchase_price)}</td>
+      <td class="num">${priceCell}</td>
+      <td class="num">${fmt$(d.end_buyer_contract_price)}</td>
+      <td class="num"><b>${fmt$(d.bucket_profit)}</b></td>
+      <td class="num">${fmtDate(d.dd_deadline)}</td>
+      <td class="num">${fmtDate(d.close_date)}</td>
+      <td class="num">${fmtDate(d.end_buyer_close_date)}</td>
+      <td>${airtableEditLink(d.airtable_record_id, '✏️')}</td>
+    </tr>`;
+  }).join('');
   document.getElementById('pulse-active-deals').innerHTML = `<table class="dt">
     <thead><tr>
       <th>Deal / Location</th><th>Phase</th><th>Bucket</th>
-      <th class="num">Purchase</th><th class="num">List</th><th class="num">Buyer $</th><th class="num">Profit</th>
-      <th class="num">DD Due</th><th class="num">Close (Buy)</th><th class="num">Close (Sell)</th>
+      <th class="num">Purchase</th><th class="num">List/Target</th><th class="num">Buyer $</th><th class="num">Profit</th>
+      <th class="num">DD Due</th><th class="num">Close (Buy)</th><th class="num">Close (Sell)</th><th>Edit</th>
     </tr></thead>
-    <tbody>${activeRows || `<tr><td colspan="10" style="text-align:center;color:#9ca3af;padding:24px">No active deals</td></tr>`}</tbody>
+    <tbody>${activeRows || `<tr><td colspan="11" style="text-align:center;color:#9ca3af;padding:24px">No active deals</td></tr>`}</tbody>
   </table>`;
 
   // ─── Hot lists (bottom) ───
@@ -1037,27 +1075,34 @@ function renderPipeline(range) {
     if (pa !== pb) return (pa < 0 ? 999 : pa) - (pb < 0 ? 999 : pb);
     return parseTimestamp(b.contract_date||0) - parseTimestamp(a.contract_date||0);
   });
-  const dealRows = sortedActive.map(d => `<tr class="row-clickable" onclick="showDealDetail('${d.airtable_record_id}')">
-    <td><b>${d.deal_name||'—'}</b><div class="meta">${d.county||''}, ${d.state||''} · ${fmt1(d.acreage)} ac</div></td>
-    <td><span class="pill-phase">${d.deal_phase||'—'}</span></td>
-    <td><span class="pill-bucket-${d.profit_bucket}">${d.profit_bucket||'—'}</span></td>
-    <td>${d.closing_type ? `<span class="${strategyClass(d.closing_type)}">${d.closing_type}</span>` : '—'}</td>
-    <td class="num">${fmtN(d.days_under_contract)}d</td>
-    <td class="num">${fmt$(d.purchase_price)}</td>
-    <td class="num">${d.listing_price ? fmt$(d.listing_price) : '<span class="text-rose">missing</span>'}</td>
-    <td class="num">${fmt$(d.end_buyer_contract_price)}</td>
-    <td class="num text-emerald"><b>${fmt$(d.bucket_profit)}</b></td>
-    <td class="num">${fmtDate(d.dd_deadline)}</td>
-    <td class="num">${fmtDate(d.close_date)}</td>
-    <td class="num">${fmtDate(d.end_buyer_close_date)}</td>
-  </tr>`).join('');
+  const dealRows = sortedActive.map(d => {
+    let priceCell;
+    if (d.listing_price) priceCell = fmt$(d.listing_price);
+    else if (d.target_sale_price) priceCell = `<span class="text-amber" title="Target Sale Price (not yet listed)">target: ${fmt$(d.target_sale_price)}</span>`;
+    else priceCell = '<span class="text-rose">missing</span>';
+    return `<tr class="row-clickable" onclick="showDealDetail('${d.airtable_record_id}')">
+      <td><b>${d.deal_name||'—'}</b><div class="meta">${d.county||''}, ${d.state||''} · ${fmt1(d.acreage)} ac</div></td>
+      <td><span class="pill-phase">${d.deal_phase||'—'}</span></td>
+      <td><span class="pill-bucket-${d.profit_bucket}">${d.profit_bucket||'—'}</span></td>
+      <td>${d.closing_type ? `<span class="${strategyClass(d.closing_type)}">${d.closing_type}</span>` : '—'}</td>
+      <td class="num">${fmtN(d.days_under_contract)}d</td>
+      <td class="num">${fmt$(d.purchase_price)}</td>
+      <td class="num">${priceCell}</td>
+      <td class="num">${fmt$(d.end_buyer_contract_price)}</td>
+      <td class="num text-emerald"><b>${fmt$(d.bucket_profit)}</b></td>
+      <td class="num">${fmtDate(d.dd_deadline)}</td>
+      <td class="num">${fmtDate(d.close_date)}</td>
+      <td class="num">${fmtDate(d.end_buyer_close_date)}</td>
+      <td>${airtableEditLink(d.airtable_record_id, '✏️')}</td>
+    </tr>`;
+  }).join('');
   document.getElementById('pipe-active').innerHTML = `<table class="dt">
     <thead><tr>
       <th>Deal / Location</th><th>Phase</th><th>Bucket</th><th>Strategy</th>
-      <th class="num">Days UC</th><th class="num">Purchase</th><th class="num">List</th><th class="num">Buyer $</th><th class="num">Profit</th>
-      <th class="num">DD Due</th><th class="num">Close (Buy)</th><th class="num">Close (Sell)</th>
+      <th class="num">Days UC</th><th class="num">Purchase</th><th class="num">List/Target</th><th class="num">Buyer $</th><th class="num">Profit</th>
+      <th class="num">DD Due</th><th class="num">Close (Buy)</th><th class="num">Close (Sell)</th><th>Edit</th>
     </tr></thead>
-    <tbody>${dealRows || `<tr><td colspan="12" style="text-align:center;color:#9ca3af;padding:24px">No active deals</td></tr>`}</tbody>
+    <tbody>${dealRows || `<tr><td colspan="13" style="text-align:center;color:#9ca3af;padding:24px">No active deals</td></tr>`}</tbody>
   </table>`;
 }
 
@@ -1071,14 +1116,22 @@ function renderProfit(range) {
   const startStr = ymd(range.start);
   const endStr = ymd(range.end);
 
-  // Data quality banner: missing listing prices on active PROJECTED deals
+  // Data quality banner: deals missing BOTH listing_price AND target_sale_price
   const projDeals = activeP.filter(d => d.profit_bucket === 'PROJECTED');
-  const projMissing = projDeals.filter(d => d.bucket_profit == null);
+  const noPriceDeals = projDeals.filter(d => !d.listing_price && !d.target_sale_price);
+  const targetOnlyDeals = projDeals.filter(d => !d.listing_price && d.target_sale_price);
   const dqBanner = document.getElementById('projected-data-quality-banner');
-  if (projMissing.length > 0) {
+  if (noPriceDeals.length > 0 || targetOnlyDeals.length > 0) {
     dqBanner.hidden = false;
-    document.getElementById('projected-data-quality-msg').innerHTML =
-      `<strong>${projMissing.length} of ${projDeals.length} PROJECTED deals are missing a Listing Price in Airtable</strong> — they contribute $0 to the Projected total. Total purchase price of those deals: ${fmt$(projMissing.reduce((s,d)=>s+(+d.purchase_price||0),0))}. <a href="#" onclick="showMissingListingDrill();return false;" style="color:#854408;text-decoration:underline">See deals →</a>`;
+    let msg = '';
+    if (noPriceDeals.length > 0) {
+      msg += `<strong>${noPriceDeals.length} of ${projDeals.length} PROJECTED deals have no price set</strong> — neither Listing Price nor Target Sale Price. They contribute $0. Combined purchase value: ${fmt$(noPriceDeals.reduce((s,d)=>s+(+d.purchase_price||0),0))}. `;
+    }
+    if (targetOnlyDeals.length > 0) {
+      msg += `<strong>${targetOnlyDeals.length} deals using Target Sale Price</strong> (estimate, not yet listed). `;
+    }
+    msg += `<a href="#" onclick="showMissingListingDrill();return false;" style="color:#854408;text-decoration:underline">See deals →</a>`;
+    document.getElementById('projected-data-quality-msg').innerHTML = msg;
   } else {
     dqBanner.hidden = true;
   }
@@ -1446,13 +1499,56 @@ function showAllRealizedDrill() {
 }
 
 function showMissingListingDrill() {
-  const deals = (state.data.pipeline || []).filter(d => 
-    d.is_active && d.profit_bucket === 'PROJECTED' && d.bucket_profit == null
-  ).sort((a,b) => (+b.purchase_price||0) - (+a.purchase_price||0));
-  const totalPurchase = deals.reduce((s,d) => s + (+d.purchase_price||0), 0);
-  openModal('Deals Missing Listing Price',
-    `<b>${deals.length}</b> deals need a Listing Price set in Airtable so projected profit can calculate. Combined purchase value: <b>${fmt$(totalPurchase)}</b>`,
-    dealsTable(deals));
+  const allProjected = (state.data.pipeline || []).filter(d =>
+    d.is_active && d.profit_bucket === 'PROJECTED'
+  );
+  const noPrice = allProjected.filter(d => !d.listing_price && !d.target_sale_price)
+    .sort((a,b) => (+b.purchase_price||0) - (+a.purchase_price||0));
+  const targetOnly = allProjected.filter(d => !d.listing_price && d.target_sale_price)
+    .sort((a,b) => (+b.purchase_price||0) - (+a.purchase_price||0));
+
+  const totalPurchaseNoPrice = noPrice.reduce((s,d) => s + (+d.purchase_price||0), 0);
+  const summary = `<b>${noPrice.length}</b> deals need a price set (Listing or Target). Combined purchase value: <b>${fmt$(totalPurchaseNoPrice)}</b>. Click "edit ↗" on any row to fix in Airtable.<br><span style="font-size:11px;color:#9ca3af">Suggested workflow: when you secure a deal, fill in <b>Target Sale Price</b> right away — projected profit will use it until you actually list, then it switches to Listing Price.</span>`;
+
+  const rowsNoPrice = noPrice.map(d => `<tr>
+    <td><b>${d.deal_name||'—'}</b><div class="meta">${d.county||''}, ${d.state||''} · ${fmt1(d.acreage)} ac</div></td>
+    <td><span class="pill-phase">${d.deal_phase||'—'}</span></td>
+    <td class="num">${fmt$(d.purchase_price)}</td>
+    <td class="num"><span class="text-rose">missing</span></td>
+    <td class="num"><span class="text-rose">missing</span></td>
+    <td>${airtableEditLink(d.airtable_record_id, 'set price ↗')}</td>
+    <td><a href="#" onclick="showDealDetail('${d.airtable_record_id}');return false;">view</a></td>
+  </tr>`).join('');
+
+  const rowsTargetOnly = targetOnly.map(d => `<tr>
+    <td><b>${d.deal_name||'—'}</b><div class="meta">${d.county||''}, ${d.state||''} · ${fmt1(d.acreage)} ac</div></td>
+    <td><span class="pill-phase">${d.deal_phase||'—'}</span></td>
+    <td class="num">${fmt$(d.purchase_price)}</td>
+    <td class="num"><span class="text-amber">target: ${fmt$(d.target_sale_price)}</span></td>
+    <td class="num text-emerald">${fmt$(d.bucket_profit)}</td>
+    <td>${airtableEditLink(d.airtable_record_id, 'list it ↗')}</td>
+    <td><a href="#" onclick="showDealDetail('${d.airtable_record_id}');return false;">view</a></td>
+  </tr>`).join('');
+
+  const html = `
+    ${noPrice.length > 0 ? `
+      <h4 style="margin:8px 0;font-size:13px;font-weight:600;color:#991818">No Price Set (${noPrice.length})</h4>
+      <table class="dt"><thead><tr>
+        <th>Deal / Location</th><th>Phase</th>
+        <th class="num">Purchase</th><th class="num">Listing</th><th class="num">Target</th>
+        <th>Edit</th><th>View</th>
+      </tr></thead><tbody>${rowsNoPrice}</tbody></table>
+    ` : ''}
+    ${targetOnly.length > 0 ? `
+      <h4 style="margin:16px 0 8px;font-size:13px;font-weight:600;color:#854408">Using Target Sale Price (Not Yet Listed) (${targetOnly.length})</h4>
+      <table class="dt"><thead><tr>
+        <th>Deal / Location</th><th>Phase</th>
+        <th class="num">Purchase</th><th class="num">Target/List</th><th class="num">Projected</th>
+        <th>Action</th><th>View</th>
+      </tr></thead><tbody>${rowsTargetOnly}</tbody></table>
+    ` : ''}
+  `;
+  openModal('Deals Needing Price Update', summary, html);
 }
 
 // ─── Phase / Strategy drill-downs ───
@@ -1678,11 +1774,25 @@ function showDealDetail(airtableId) {
   const d = (state.data.pipeline || []).find(x => x.airtable_record_id === airtableId);
   if (!d) return;
   document.getElementById('drill-title').textContent = d.deal_name || 'Deal Detail';
+
+  // Profit source label — tells the user what's driving the bucket_profit
+  const sourceLabel = {
+    'realized': 'HUD math (or deal_net_profit)',
+    'buyer_contract': 'End Buyer Contract Price',
+    'listing_price': 'Listing Price',
+    'target_sale_price': 'Target Sale Price (estimate, not listed)',
+    'manual_override': 'Manual Override',
+    'quick_estimate': 'Quick Estimate'
+  }[d.profit_source] || '—';
+
+  const airtableUrl = airtableInterfaceUrl(d.airtable_record_id);
+  const airtableTableUrl = airtableRecordUrl(d.airtable_record_id);
+
   document.getElementById('drill-body').innerHTML = `
     <div class="grid grid-3" style="margin-bottom:16px">
       <div class="card"><div class="kpi-label">Phase</div><div class="kpi-value" style="font-size:16px">${d.deal_phase||'—'}</div></div>
       <div class="card"><div class="kpi-label">Bucket</div><div class="kpi-value" style="font-size:16px"><span class="pill-bucket-${d.profit_bucket}">${d.profit_bucket||'—'}</span></div></div>
-      <div class="card"><div class="kpi-label">Profit</div><div class="kpi-value text-emerald">${fmt$(d.bucket_profit)}</div></div>
+      <div class="card"><div class="kpi-label">Profit</div><div class="kpi-value text-emerald">${fmt$(d.bucket_profit)}</div><div class="kpi-sub">from: ${sourceLabel}</div></div>
     </div>
     <h4 style="margin-bottom:8px;font-size:13px;font-weight:600">Property</h4>
     <table class="dt" style="margin-bottom:16px">
@@ -1699,15 +1809,16 @@ function showDealDetail(airtableId) {
       <tbody>
         <tr><td><b>Purchase Price</b></td><td class="num">${fmt$(d.purchase_price)}</td></tr>
         <tr><td><b>EMD</b></td><td class="num">${fmt$(d.emd_amount)} ${d.emd_deposited?'(deposited)':'(not deposited)'}</td></tr>
+        <tr><td><b>Target Sale Price</b><div class="meta">expected sale before listing</div></td><td class="num">${d.target_sale_price ? fmt$(d.target_sale_price) : '<span class="text-muted">not set</span>'}</td></tr>
         <tr><td><b>Listing Price</b></td><td class="num">${d.listing_price ? fmt$(d.listing_price) : '<span class="text-rose">missing</span>'}</td></tr>
         <tr><td><b>End Buyer Contract</b></td><td class="num">${fmt$(d.end_buyer_contract_price)}</td></tr>
         <tr><td><b>Actual Sale Price</b></td><td class="num">${fmt$(d.actual_sale_price)}</td></tr>
-        <tr><td><b>Bucket Profit</b></td><td class="num text-emerald"><b>${fmt$(d.bucket_profit)}</b></td></tr>
+        <tr style="background:#fafbff"><td><b>Bucket Profit</b><div class="meta">computed from: ${sourceLabel}</div></td><td class="num text-emerald"><b>${fmt$(d.bucket_profit)}</b></td></tr>
         <tr><td><b>Quick Estimate</b></td><td class="num">${fmt$(d.quick_profit_estimate)}</td></tr>
       </tbody>
     </table>
     <h4 style="margin-bottom:8px;font-size:13px;font-weight:600">Timeline</h4>
-    <table class="dt">
+    <table class="dt" style="margin-bottom:16px">
       <tbody>
         <tr><td><b>Contract Date</b></td><td>${fmtDate(d.contract_date)}</td></tr>
         <tr><td><b>DD Deadline</b></td><td>${fmtDate(d.dd_deadline)}</td></tr>
@@ -1719,7 +1830,12 @@ function showDealDetail(airtableId) {
         <tr><td><b>Days UC</b></td><td>${fmtN(d.days_under_contract)}</td></tr>
       </tbody>
     </table>
-    ${d.listing_url ? `<div style="margin-top:16px"><a class="btn-primary" style="display:inline-block;text-decoration:none;color:white" href="${d.listing_url}" target="_blank">View Listing ↗</a></div>` : ''}
+    <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+      ${airtableUrl ? `<a class="btn-primary" style="display:inline-block;text-decoration:none;color:white;background:#2563eb" href="${airtableUrl}" target="_blank">✏️ Edit in Airtable ↗</a>` : ''}
+      ${airtableTableUrl ? `<a class="btn-primary" style="display:inline-block;text-decoration:none;color:white;background:#6b7280" href="${airtableTableUrl}" target="_blank">Table View ↗</a>` : ''}
+      ${d.listing_url ? `<a class="btn-primary" style="display:inline-block;text-decoration:none;color:white" href="${d.listing_url}" target="_blank">View Listing ↗</a>` : ''}
+      ${d.pipedrive_deal_id ? `<a class="btn-primary" style="display:inline-block;text-decoration:none;color:white;background:#374151" href="https://principalacres.pipedrive.com/deal/${d.pipedrive_deal_id}" target="_blank">Pipedrive ↗</a>` : ''}
+    </div>
   `;
   document.getElementById('drill-modal').classList.add('show');
 }
