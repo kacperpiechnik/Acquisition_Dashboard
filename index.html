@@ -5,22 +5,62 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Principal Acres — AM Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-  body{font-family:'Inter',system-ui,sans-serif}
-  .tab-btn{transition:all .15s;color:#6b7280;border-bottom:2px solid transparent;white-space:nowrap}
+  *{box-sizing:border-box}
+  body{font-family:'Inter',system-ui,sans-serif;background:#f9fafb;color:#111827;margin:0;min-height:100vh}
+
+  /* Layout */
+  .container{max-width:80rem;margin:0 auto;padding:0 24px}
+  header{background:#fff;border-bottom:1px solid #e5e7eb;position:sticky;top:0;z-index:50}
+  .header-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+  .header-left h1{font-size:16px;font-weight:600;margin:0}
+  .header-left .sub{font-size:12px;color:#6b7280}
+  .header-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  nav{padding:0 24px;border-bottom:1px solid transparent}
+  nav .tabs{display:flex;gap:24px;overflow-x:auto;max-width:80rem;margin:0 auto}
+  .tab-btn{transition:all .15s;color:#6b7280;border-bottom:2px solid transparent;white-space:nowrap;padding:10px 0;font-size:14px;background:none;border-top:none;border-left:none;border-right:none;cursor:pointer;font-family:inherit}
   .tab-btn:hover{color:#111827}
   .tab-btn.active{color:#111827;border-bottom-color:#111827;font-weight:600}
-  .filter-btn{transition:all .15s}
+
+  /* Period bar */
+  .period-bar{background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 0}
+  .period-inner{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .period-label{font-size:12px;color:#6b7280;font-weight:500;margin-right:4px}
+  .filter-btn{transition:all .15s;padding:5px 12px;font-size:12px;font-weight:500;border-radius:6px;background:#f3f4f6;color:#374151;border:none;cursor:pointer;font-family:inherit}
+  .filter-btn:hover{background:#e5e7eb}
   .filter-btn.active{background:#111827!important;color:white!important}
-  .kpi-card{background:white;border:1px solid #e5e7eb;border-radius:10px;padding:14px}
-  .kpi-card.accent{background:linear-gradient(135deg,#fafbff 0%,#f4f5fb 100%);border-color:#dde1f0}
-  .kpi-card.warn{background:linear-gradient(135deg,#fffbeb 0%,#fef3c7 100%);border-color:#fde68a}
-  .kpi-label{font-size:10.5px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
-  .kpi-value{font-size:24px;font-weight:700;color:#111827;margin-top:4px;line-height:1.1}
+  .custom-range-inputs{display:none;align-items:center;gap:6px}
+  .custom-range-inputs.show{display:inline-flex}
+  .custom-range-inputs input{font-size:12px;padding:4px 8px;border:1px solid #d1d5db;border-radius:5px;font-family:inherit}
+  .period-display{margin-left:auto;font-size:12px;color:#6b7280;font-weight:500}
+
+  /* Cards */
+  main{padding:24px 0}
+  .sec-h{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;margin:0 0 10px 0}
+  .sec-h.spaced{margin-top:28px}
+  .grid{display:grid;gap:12px}
+  .grid-2{grid-template-columns:repeat(2,1fr)}
+  .grid-3{grid-template-columns:repeat(3,1fr)}
+  .grid-4{grid-template-columns:repeat(4,1fr)}
+  @media (max-width:900px){.grid-3,.grid-4{grid-template-columns:repeat(2,1fr)}}
+  .card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px}
+  .card.lg{padding:18px}
+  .card.accent{background:linear-gradient(135deg,#fafbff 0%,#f4f5fb 100%);border-color:#dde1f0}
+  .card.proj{background:linear-gradient(135deg,#fefce8 0%,#fef9c3 100%);border-color:#fde047}
+  .card.locked{background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 100%);border-color:#93c5fd}
+  .card.realized{background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%);border-color:#6ee7b7}
+  .card.term{background:#fef2f2;border-color:#fecaca}
+  .card.warn{background:linear-gradient(135deg,#fffbeb 0%,#fef3c7 100%);border-color:#fde68a}
+  .card.click{cursor:pointer;transition:transform .12s,box-shadow .12s}
+  .card.click:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.06)}
+  .kpi-label{font-size:10.5px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;font-weight:600;display:flex;align-items:center;gap:6px}
+  .kpi-value{font-size:24px;font-weight:700;margin-top:4px;line-height:1.1}
   .kpi-sub{font-size:11px;color:#6b7280;margin-top:4px}
-  .pill{display:inline-flex;align-items:center;padding:1px 7px;border-radius:9px;font-size:10.5px;font-weight:600;margin-left:6px}
+  .kpi-icon{font-size:14px}
+
+  /* Pills */
+  .pill{display:inline-flex;align-items:center;padding:1px 7px;border-radius:9px;font-size:10.5px;font-weight:600}
   .pill-g{background:#dcfce7;color:#166534}
   .pill-y{background:#fef3c7;color:#854408}
   .pill-r{background:#fee2e2;color:#991818}
@@ -30,923 +70,1170 @@
   .pill-strategy.as{background:#dcfce7;color:#166534}
   .pill-strategy.sd{background:#f3e8ff;color:#6b21a8}
   .pill-phase{display:inline-block;padding:1px 8px;border-radius:9px;font-size:10px;font-weight:600;background:#f1f5f9;color:#475569}
-  .sec-h{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;margin:0 0 10px 0}
-  .card{background:white;border:1px solid #e5e7eb;border-radius:10px;padding:18px}
-  .card-t{font-size:14px;font-weight:600;color:#111827;margin-bottom:14px}
-  .card-tt{font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+  .pill-bucket-PROJECTED{background:#fef9c3;color:#854408}
+  .pill-bucket-LOCKED{background:#dbeafe;color:#1e40af}
+  .pill-bucket-REALIZED{background:#d1fae5;color:#065f46}
+  .pill-bucket-TERMINATED{background:#fee2e2;color:#991818}
+  .pill-bucket-PROJECTED, .pill-bucket-LOCKED, .pill-bucket-REALIZED, .pill-bucket-TERMINATED{display:inline-block;padding:1px 8px;border-radius:9px;font-size:10px;font-weight:600}
+
+  /* Tables */
+  .card-t{font-size:14px;font-weight:600;margin-bottom:14px}
   table.dt{width:100%;border-collapse:collapse}
-  table.dt th{text-align:left;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;padding:9px 11px;border-bottom:1px solid #e5e7eb}
+  table.dt th{text-align:left;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;padding:9px 11px;border-bottom:1px solid #e5e7eb;white-space:nowrap}
   table.dt th.num{text-align:right}
-  table.dt td{font-size:13px;color:#111827;padding:9px 11px;border-bottom:1px solid #f3f4f6}
+  table.dt td{font-size:13px;padding:9px 11px;border-bottom:1px solid #f3f4f6;vertical-align:top}
   table.dt td.num{text-align:right;font-variant-numeric:tabular-nums}
   table.dt tr:hover{background:#f9fafb}
   table.dt a{color:#3b82f6;text-decoration:none}
   table.dt a:hover{text-decoration:underline}
+  table.dt .row-clickable{cursor:pointer}
+  .scroll-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+  /* Hot lists */
   .hot-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid #f3f4f6;gap:10px}
   .hot-row:last-child{border-bottom:none}
-  .hot-row .name{font-size:13px;font-weight:600;color:#111827}
+  .hot-row .name{font-size:13px;font-weight:600}
   .hot-row .meta{font-size:11px;color:#6b7280;margin-top:2px}
   .hot-row .right{font-size:12px;color:#6b7280;text-align:right;white-space:nowrap}
   .hot-empty{font-size:12px;color:#9ca3af;font-style:italic;padding:14px 0;text-align:center}
+
+  /* Modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(17,24,39,.5);display:none;align-items:center;justify-content:center;z-index:200;padding:24px}
+  .modal-bg.show{display:flex}
+  .modal{background:#fff;border-radius:12px;max-width:1100px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+  .modal-h{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #e5e7eb}
+  .modal-h h3{margin:0;font-size:16px;font-weight:600}
+  .modal-h .x{cursor:pointer;border:none;background:none;font-size:20px;color:#6b7280;padding:4px 8px;border-radius:6px}
+  .modal-h .x:hover{background:#f3f4f6;color:#111827}
+  .modal-body{padding:16px 20px;overflow-y:auto;flex:1}
+
+  /* Misc */
   .spinner{display:inline-block;width:14px;height:14px;border:2px solid #e5e7eb;border-top-color:#111827;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:6px}
   @keyframes spin{to{transform:rotate(360deg)}}
+  .btn-primary{padding:6px 14px;background:#111827;color:white;border-radius:6px;font-size:12px;font-weight:500;border:none;cursor:pointer;font-family:inherit}
+  .btn-primary:hover{background:#374151}
+  .btn-primary:disabled{opacity:.6;cursor:not-allowed}
+  .checkbox-row{display:flex;align-items:center;gap:6px;font-size:12px;color:#4b5563;cursor:pointer}
+  .select-input{font-size:12px;border:1px solid #e5e7eb;border-radius:5px;padding:4px 8px;background:#fff;font-family:inherit}
   [hidden]{display:none!important}
+  .text-emerald{color:#10b981}
+  .text-rose{color:#ef4444}
+  .text-amber{color:#f59e0b}
+  .text-blue{color:#3b82f6}
+  .text-muted{color:#9ca3af}
+  .text-strong{color:#111827;font-weight:600}
+  .err-banner{background:#fef2f2;border:1px solid #fecaca;color:#991818;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px}
+  .info-banner{background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:12px;display:flex;justify-content:space-between;align-items:center}
+
+  footer{padding:24px 0;text-align:center;font-size:12px;color:#9ca3af}
 </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body>
 
-<header class="bg-white border-b border-gray-200 sticky top-0 z-50">
-  <div class="max-w-[80rem] mx-auto px-6 py-3 flex items-center justify-between">
-    <div>
-      <h1 class="text-base font-semibold text-gray-900">Principal Acres</h1>
-      <div class="text-xs text-gray-500">Acquisition Manager Dashboard</div>
-    </div>
-    <div class="flex items-center gap-3">
-      <div class="flex items-center gap-2">
-        <span class="text-xs text-gray-500">AM:</span>
-        <select id="am-filter" class="text-xs border border-gray-200 rounded px-2 py-1 bg-white">
-          <option value="all">All</option>
-          <option value="Jonathan" selected>Jonathan</option>
-          <option value="Unassigned">Unassigned</option>
-        </select>
+<header>
+  <div class="container">
+    <div class="header-row">
+      <div class="header-left">
+        <h1>Principal Acres</h1>
+        <div class="sub">Acquisition Manager Dashboard</div>
       </div>
-      <div id="last-refresh" class="text-xs text-gray-500">Loading…</div>
-      <label class="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
-        <input id="auto-refresh" type="checkbox" checked> Auto (5m)
-      </label>
-      <button id="refresh-btn" class="px-3 py-1.5 bg-gray-900 text-white rounded-md text-xs font-medium hover:bg-gray-700">
-        <span id="refresh-label">Refresh</span>
-      </button>
+      <div class="header-right">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:12px;color:#6b7280">AM:</span>
+          <select id="am-filter" class="select-input">
+            <option value="Jonathan" selected>Jonathan</option>
+          </select>
+        </div>
+        <div id="last-refresh" style="font-size:12px;color:#6b7280">Loading…</div>
+        <label class="checkbox-row"><input id="auto-refresh" type="checkbox" checked> Auto (5m)</label>
+        <button id="refresh-btn" class="btn-primary"><span id="refresh-label">Refresh</span></button>
+      </div>
     </div>
   </div>
-  <nav class="max-w-[80rem] mx-auto px-6">
-    <div class="flex gap-6 overflow-x-auto">
-      <button class="tab-btn active py-3 text-sm" data-tab="day">My Day</button>
-      <button class="tab-btn py-3 text-sm" data-tab="scorecard">Scorecard</button>
-      <button class="tab-btn py-3 text-sm" data-tab="pipeline">Pipeline</button>
-      <button class="tab-btn py-3 text-sm" data-tab="listings">Listings & Sales</button>
-      <button class="tab-btn py-3 text-sm" data-tab="profit">Profit & Closes</button>
-      <button class="tab-btn py-3 text-sm" data-tab="growth">Growth</button>
+  <nav>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="pulse">Pulse</button>
+      <button class="tab-btn" data-tab="performance">Performance</button>
+      <button class="tab-btn" data-tab="pipeline">Pipeline</button>
+      <button class="tab-btn" data-tab="profit">Profit</button>
+      <button class="tab-btn" data-tab="activity">Activity</button>
     </div>
   </nav>
 </header>
 
-<div class="bg-white border-b border-gray-200">
-  <div class="max-w-[80rem] mx-auto px-6 py-2.5 flex items-center gap-2 flex-wrap">
-    <span class="text-xs text-gray-500 font-medium mr-1">Period:</span>
-    <button class="filter-btn active px-3 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-700" data-filter="this_week">This Week</button>
-    <button class="filter-btn px-3 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-700" data-filter="last_week">Last Week</button>
-    <button class="filter-btn px-3 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-700" data-filter="mtd">MTD</button>
-    <button class="filter-btn px-3 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-700" data-filter="last_month">Last Month</button>
-    <button class="filter-btn px-3 py-1 text-xs font-medium rounded-md bg-gray-100 text-gray-700" data-filter="ytd">YTD</button>
-    <div class="flex-1"></div>
-    <span id="period-label" class="text-xs text-gray-600 font-medium"></span>
+<div class="period-bar">
+  <div class="container period-inner">
+    <span class="period-label">Period:</span>
+    <button class="filter-btn active" data-period="this_week">This Week</button>
+    <button class="filter-btn" data-period="last_week">Last Week</button>
+    <button class="filter-btn" data-period="last_4w">Last 4 Wks</button>
+    <button class="filter-btn" data-period="last_8w">Last 8 Wks</button>
+    <button class="filter-btn" data-period="mtd">MTD</button>
+    <button class="filter-btn" data-period="last_month">Last Month</button>
+    <button class="filter-btn" data-period="ytd">YTD</button>
+    <button class="filter-btn" data-period="all">All-Time</button>
+    <button class="filter-btn" data-period="custom">Custom…</button>
+    <span class="custom-range-inputs" id="custom-range">
+      <input type="date" id="custom-start" />
+      <span style="color:#9ca3af">→</span>
+      <input type="date" id="custom-end" />
+    </span>
+    <span id="period-display" class="period-display"></span>
   </div>
 </div>
 
-<main class="max-w-[80rem] mx-auto px-6 py-6">
-  <div id="error-banner" hidden class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-md mb-4 text-sm"></div>
-  <div id="unassigned-banner" hidden class="bg-amber-50 border border-amber-200 text-amber-900 px-4 py-3 rounded-md mb-4 text-sm flex items-center justify-between">
-    <span id="unassigned-msg"></span>
-    <button id="show-unassigned" class="text-xs font-medium underline hover:no-underline">Show unassigned →</button>
+<main>
+  <div class="container">
+    <div id="error-banner" hidden class="err-banner"></div>
+
+    <!-- ─── PULSE ─── -->
+    <section data-section="pulse">
+      <h2 class="sec-h">Today's Hot List</h2>
+      <div class="grid grid-4">
+        <div class="card lg">
+          <h3 class="kpi-label" style="margin-bottom:10px">🔥 Closing This Week</h3>
+          <div id="hot-buy-closing"></div>
+        </div>
+        <div class="card lg">
+          <h3 class="kpi-label" style="margin-bottom:10px">💰 Buyer Closing This Week</h3>
+          <div id="hot-sell-closing"></div>
+        </div>
+        <div class="card lg">
+          <h3 class="kpi-label" style="margin-bottom:10px">⏰ DD Deadlines (7 Days)</h3>
+          <div id="hot-dd"></div>
+        </div>
+        <div class="card lg">
+          <h3 class="kpi-label" style="margin-bottom:10px">🐌 Listings &gt;60 Days, No Buyer</h3>
+          <div id="hot-stale-listings"></div>
+        </div>
+      </div>
+
+      <h2 class="sec-h spaced">This Week So Far</h2>
+      <div id="pulse-week" class="grid grid-4"></div>
+
+      <h2 class="sec-h spaced">Hit / Miss vs Goals</h2>
+      <div id="pulse-goals" class="grid grid-4"></div>
+
+      <h2 class="sec-h spaced">My Pipeline Snapshot</h2>
+      <div id="pulse-snapshot" class="grid grid-4"></div>
+    </section>
+
+    <!-- ─── PERFORMANCE ─── -->
+    <section data-section="performance" hidden>
+      <h2 class="sec-h">Weekly Ledger (Filtered to Period)</h2>
+      <div class="card">
+        <div class="scroll-wrap"><div id="perf-ledger"></div></div>
+      </div>
+
+      <h2 class="sec-h spaced">Conversion Funnel (Period Aggregate)</h2>
+      <div id="perf-conversion" class="grid grid-4"></div>
+
+      <h2 class="sec-h spaced">Activity-to-Outcome Efficiency</h2>
+      <div id="perf-efficiency" class="grid grid-4"></div>
+
+      <h2 class="sec-h spaced">Trends</h2>
+      <div class="grid grid-2">
+        <div class="card lg"><h3 class="card-t">Funnel Volume Over Time</h3><canvas id="c-perf-funnel" height="160"></canvas></div>
+        <div class="card lg"><h3 class="card-t">Talk Time per Contract Trend</h3><canvas id="c-perf-talk-per-contract" height="160"></canvas></div>
+        <div class="card lg"><h3 class="card-t">Conversion Ratios Over Time</h3><canvas id="c-perf-ratios" height="160"></canvas></div>
+        <div class="card lg"><h3 class="card-t">Activity Over Time (Calls + Talk Hrs)</h3><canvas id="c-perf-activity" height="160"></canvas></div>
+      </div>
+    </section>
+
+    <!-- ─── PIPELINE ─── -->
+    <section data-section="pipeline" hidden>
+      <h2 class="sec-h">Phase Distribution</h2>
+      <div id="pipe-phases" class="grid grid-4"></div>
+
+      <h2 class="sec-h spaced">Strategy Mix</h2>
+      <div id="pipe-strategy" class="grid grid-4"></div>
+
+      <h2 class="sec-h spaced">Currently Listed</h2>
+      <div class="card">
+        <div class="scroll-wrap"><div id="pipe-listings"></div></div>
+      </div>
+
+      <h2 class="sec-h spaced">My Active Deals</h2>
+      <div class="card">
+        <div class="scroll-wrap"><div id="pipe-active"></div></div>
+      </div>
+    </section>
+
+    <!-- ─── PROFIT ─── -->
+    <section data-section="profit" hidden>
+      <h2 class="sec-h">Profit by Bucket (Active Pipeline)</h2>
+      <div id="profit-buckets" class="grid grid-4"></div>
+
+      <h2 class="sec-h spaced">Realized Profit</h2>
+      <div id="profit-realized" class="grid grid-4"></div>
+
+      <h2 class="sec-h spaced">Closing Timelines</h2>
+      <div class="grid grid-2">
+        <div class="card lg">
+          <h3 class="card-t">Buy-Side Closings (We Pay Seller)</h3>
+          <div id="profit-buy-timeline" class="grid grid-4" style="gap:10px"></div>
+        </div>
+        <div class="card lg">
+          <h3 class="card-t">Sell-Side Closings (Buyer Pays Us)</h3>
+          <div id="profit-sell-timeline" class="grid grid-4" style="gap:10px"></div>
+        </div>
+      </div>
+
+      <h2 class="sec-h spaced">Monthly Profit by Bucket</h2>
+      <div class="card lg"><canvas id="c-profit-monthly" height="120"></canvas></div>
+
+      <h2 class="sec-h spaced">Closed Deals — Profit per Deal</h2>
+      <div class="card lg"><canvas id="c-profit-per-deal" height="120"></canvas></div>
+
+      <h2 class="sec-h spaced">Recently Closed (Period)</h2>
+      <div class="card">
+        <div class="scroll-wrap"><div id="profit-closed-table"></div></div>
+      </div>
+    </section>
+
+    <!-- ─── ACTIVITY ─── -->
+    <section data-section="activity" hidden>
+      <h2 class="sec-h">Activity Summary (Period)</h2>
+      <div id="activity-summary" class="grid grid-4"></div>
+
+      <h2 class="sec-h spaced">Daily Activity (Last 60 Days)</h2>
+      <div class="grid grid-2">
+        <div class="card lg"><h3 class="card-t">Calls per Day</h3><canvas id="c-act-calls-daily" height="160"></canvas></div>
+        <div class="card lg"><h3 class="card-t">Talk Time per Day</h3><canvas id="c-act-talk-daily" height="160"></canvas></div>
+        <div class="card lg"><h3 class="card-t">Texts Sent per Day</h3><canvas id="c-act-texts-daily" height="160"></canvas></div>
+        <div class="card lg"><h3 class="card-t">Inbound vs Outbound</h3><canvas id="c-act-direction" height="160"></canvas></div>
+      </div>
+
+      <div class="info-banner" style="margin-top:24px">
+        <span>📞 <strong>Coming next phase:</strong> Calls per deal, talk time per offer, and lead-to-contract attribution. Requires Quo webhooks build.</span>
+      </div>
+    </section>
   </div>
-
-  <!-- ─── MY DAY ─── -->
-  <section data-section="day">
-    <h2 class="sec-h">This Week at a Glance</h2>
-    <div id="day-glance" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
-
-    <h2 class="sec-h mt-7">Hit / Miss vs Goals</h2>
-    <div id="day-goals" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
-
-    <h2 class="sec-h mt-7">Hot List — What to Work On</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-      <div class="card">
-        <h3 class="card-tt">🔥 Closing This Week</h3>
-        <div id="hot-closing"></div>
-      </div>
-      <div class="card">
-        <h3 class="card-tt">⏰ DD Deadlines This Week</h3>
-        <div id="hot-dd"></div>
-      </div>
-      <div class="card">
-        <h3 class="card-tt">💰 EMD Due Soon</h3>
-        <div id="hot-emd"></div>
-      </div>
-      <div class="card">
-        <h3 class="card-tt">🐌 Stale (&gt;14 days)</h3>
-        <div id="hot-stale"></div>
-      </div>
-    </div>
-
-    <h2 class="sec-h mt-7">My Pipeline Snapshot</h2>
-    <div id="day-snapshot" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
-  </section>
-
-  <!-- ─── SCORECARD ─── -->
-  <section data-section="scorecard" hidden>
-    <h2 class="sec-h">Weekly Funnel — Last 8 Weeks</h2>
-    <div class="card"><div id="scorecard-table" class="overflow-x-auto"></div></div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-7">
-      <div class="card"><h3 class="card-t">Funnel Trend (16 Weeks)</h3><canvas id="c-funnel-trend" height="160"></canvas></div>
-      <div class="card"><h3 class="card-t">Contracts by Source</h3><canvas id="c-source-mix" height="160"></canvas></div>
-    </div>
-
-    <h2 class="sec-h mt-7">Conversion Efficiency</h2>
-    <div id="conv-cards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
-
-    <h2 class="sec-h mt-7">Monthly Roll-up</h2>
-    <div class="card"><div id="monthly-table" class="overflow-x-auto"></div></div>
-  </section>
-
-  <!-- ─── PIPELINE ─── -->
-  <section data-section="pipeline" hidden>
-    <h2 class="sec-h">Status Funnel</h2>
-    <div id="pl-funnel" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3"></div>
-
-    <h2 class="sec-h mt-7">Capital & Risk</h2>
-    <div id="pl-capital" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
-
-    <h2 class="sec-h mt-7">Profit Outlook</h2>
-    <div id="pl-profit" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
-
-    <h2 class="sec-h mt-7">Strategy Mix</h2>
-    <div id="pl-strategy" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
-
-    <h2 class="sec-h mt-7">My Active Deals</h2>
-    <div class="card"><div id="my-deals" class="overflow-x-auto"></div></div>
-  </section>
-
-  <!-- ─── LISTINGS & SALES ─── -->
-  <section data-section="listings" hidden>
-    <h2 class="sec-h">Listings Overview</h2>
-    <div id="listings-cards" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
-
-    <h2 class="sec-h mt-7">Currently Listed</h2>
-    <div class="card"><div id="listings-table" class="overflow-x-auto"></div></div>
-
-    <h2 class="sec-h mt-7">Should Be Listed (Past Site Works, No Listing)</h2>
-    <div class="card"><div id="needs-listing" class="overflow-x-auto"></div></div>
-
-    <h2 class="sec-h mt-7">Recent Buyer Activity</h2>
-    <div class="card"><div id="recent-buyer" class="overflow-x-auto"></div></div>
-  </section>
-
-  <!-- ─── PROFIT & CLOSES ─── -->
-  <section data-section="profit" hidden>
-    <h2 class="sec-h">Profit Headline</h2>
-    <div id="profit-headline" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
-
-    <h2 class="sec-h mt-7">Closing Timeline</h2>
-    <div id="profit-timeline" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-7">
-      <div class="card"><h3 class="card-t">Monthly Contracted Profit</h3><canvas id="c-monthly-profit" height="160"></canvas></div>
-      <div class="card"><h3 class="card-t">Deals Contracted vs Terminated</h3><canvas id="c-monthly-flow" height="160"></canvas></div>
-    </div>
-
-    <h2 class="sec-h mt-7">Recently Closed (Last 90 Days)</h2>
-    <div class="card"><div id="recent-closes" class="overflow-x-auto"></div></div>
-  </section>
-
-  <!-- ─── GROWTH ─── -->
-  <section data-section="growth" hidden>
-    <h2 class="sec-h">Trend — 16 Weeks</h2>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <div class="card"><h3 class="card-t">Funnel Volume Over Time</h3><canvas id="c-gr-funnel" height="160"></canvas></div>
-      <div class="card"><h3 class="card-t">Source Mix Evolution</h3><canvas id="c-gr-source" height="160"></canvas></div>
-      <div class="card"><h3 class="card-t">Win Rate (Offer → Contract)</h3><canvas id="c-gr-winrate" height="160"></canvas></div>
-      <div class="card"><h3 class="card-t">Call Activity (Jonathan)</h3><canvas id="c-gr-calls" height="160"></canvas></div>
-    </div>
-  </section>
 </main>
 
-<footer class="max-w-[80rem] mx-auto px-6 py-6 text-xs text-gray-400 text-center">
-  Live data from Supabase · Acquisition Manager view
+<!-- Drill-down modal -->
+<div id="drill-modal" class="modal-bg">
+  <div class="modal">
+    <div class="modal-h">
+      <h3 id="drill-title">Deal Details</h3>
+      <button class="x" id="drill-close">×</button>
+    </div>
+    <div class="modal-body" id="drill-body"></div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">Live data from Supabase · Acquisition Manager view</div>
 </footer>
 
 <script>
+//=============================================================================
+// CONFIG
+//=============================================================================
 const CONFIG = {
   SUPABASE_URL: 'https://bvmwlmeaurnqvfbtzvyp.supabase.co',
   SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2bXdsbWVhdXJucXZmYnR6dnlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzczMzgsImV4cCI6MjA5MDA1MzMzOH0.gQVxi6EjtMnRrPdzrZM5YK6SWNQ4wQIK44PpZ2RILy0',
   AUTO_REFRESH_MINUTES: 5
 };
 
-const state = { data:{}, filter:'this_week', tab:'day', amFilter:'Jonathan', charts:{}, lastRefresh:null, autoTimer:null };
+const state = {
+  data: {},
+  amFilter: 'Jonathan',
+  period: 'this_week',
+  customStart: null,
+  customEnd: null,
+  tab: 'pulse',
+  charts: {},
+  lastRefresh: null,
+  autoTimer: null
+};
 
-// ---------- Supabase fetch ----------
-async function sb(path){
+//=============================================================================
+// FETCH
+//=============================================================================
+async function sb(path) {
   const r = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${path}`, {
-    headers:{ apikey:CONFIG.SUPABASE_ANON_KEY, Authorization:`Bearer ${CONFIG.SUPABASE_ANON_KEY}` }
+    headers: { apikey: CONFIG.SUPABASE_ANON_KEY, Authorization: `Bearer ${CONFIG.SUPABASE_ANON_KEY}` }
   });
-  if(!r.ok) throw new Error(`${r.status} ${path}: ${await r.text()}`);
+  if (!r.ok) throw new Error(`${r.status} ${path}: ${await r.text()}`);
   return r.json();
 }
 
-async function loadAll(){
+async function loadAll() {
   const btn = document.getElementById('refresh-btn');
   const lbl = document.getElementById('refresh-label');
-  btn.disabled = true; lbl.innerHTML = '<span class="spinner"></span>Loading';
+  btn.disabled = true;
+  lbl.innerHTML = '<span class="spinner"></span>Loading';
   document.getElementById('error-banner').hidden = true;
+
   try {
-    const [vsp, vsps, am, amMonth, amProfit, quoW, quoD, listings, ph, stale, kpi, th, monthlyCloses] = await Promise.all([
-      sb('v_sales_pipeline?order=contract_date.desc.nullslast'),
-      sb('v_sales_pipeline_summary'),
-      sb('v_am_weekly_scorecard?order=week_start.desc&limit=16'),
-      sb('v_am_monthly_scorecard?order=month.desc&limit=12'),
-      sb('v_am_monthly_profit?order=contract_month.desc&limit=12'),
-      sb('v_quo_weekly?order=week_start.desc&limit=32'),
-      sb('quo_daily?order=date.desc&limit=60'),
-      sb('v_active_listings'),
-      sb('v_active_pipeline_health'),
-      sb('v_stale_deals?limit=50'),
-      sb('kpi_weekly_snapshot?order=week_start.asc'),
+    const am = encodeURIComponent(state.amFilter);
+    const [pipeline, weekly, monthly, listings, closedSummary, thresholds, quoDaily] = await Promise.all([
+      sb(`v_am_pipeline?acquisition_manager=eq.${am}&order=contract_date.desc.nullslast`),
+      sb(`v_am_weekly_ledger?acquisition_manager=eq.${am}&order=week_start.desc&limit=24`),
+      sb(`v_am_monthly_ledger?acquisition_manager=eq.${am}&order=month.desc`),
+      sb(`v_active_listings?acquisition_manager=eq.${am}&order=date_listed.desc.nullslast`),
+      sb(`v_closed_deals_summary?acquisition_manager=eq.${am}&order=close_month.desc`),
       sb('kpi_thresholds'),
-      sb('v_closed_deals_summary?order=close_month.desc&limit=12').catch(()=>[])
+      sb(`quo_daily?user_name=eq.${am}&order=date.desc&limit=60`)
     ]);
-    state.data = { vsp, vsps:(vsps[0]||{}), am, amMonth, amProfit, quoW, quoD, listings, pipelineHealth:ph, stale, kpi, thresholds:th, monthlyCloses };
+
+    state.data = { pipeline, weekly, monthly, listings, closedSummary, thresholds, quoDaily };
     state.lastRefresh = new Date();
-    document.getElementById('last-refresh').textContent = `Updated ${state.lastRefresh.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}`;
+    document.getElementById('last-refresh').textContent =
+      `Updated ${state.lastRefresh.toLocaleTimeString('en-US', {hour:'numeric',minute:'2-digit'})}`;
     renderAll();
-  } catch(e){
+  } catch(e) {
     const eb = document.getElementById('error-banner');
-    eb.textContent = e.message;
+    eb.textContent = `Failed to load data: ${e.message}`;
     eb.hidden = false;
   } finally {
-    btn.disabled = false; lbl.textContent = 'Refresh';
+    btn.disabled = false;
+    lbl.textContent = 'Refresh';
   }
 }
 
-// ---------- Date helpers ----------
-function getMonday(d){ const day=d.getDay(); const m=new Date(d); m.setDate(d.getDate()-(day===0?6:day-1)); m.setHours(0,0,0,0); return m; }
-function addDays(d,n){ const x=new Date(d); x.setDate(x.getDate()+n); return x; }
-function getRange(f){
-  const today = new Date(); today.setHours(23,59,59,999);
+//=============================================================================
+// DATE HELPERS
+//=============================================================================
+function getMonday(d) {
+  const day = d.getDay();
+  const m = new Date(d);
+  m.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+  m.setHours(0,0,0,0);
+  return m;
+}
+function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
+function endOfMonth(d) { const e = new Date(d.getFullYear(), d.getMonth()+1, 0); e.setHours(23,59,59,999); return e; }
+function startOfYear(d) { return new Date(d.getFullYear(), 0, 1); }
+
+function getRange(period, customStart, customEnd) {
+  const today = new Date();
+  today.setHours(23,59,59,999);
   const monday = getMonday(today);
-  switch(f){
-    case 'this_week': return { start:monday, end:today, label:`This Week (since ${fmtD(monday)})` };
-    case 'last_week': return { start:addDays(monday,-7), end:addDays(monday,-1), label:`Last Week` };
-    case 'mtd': return { start:new Date(today.getFullYear(),today.getMonth(),1), end:today, label:`MTD (${today.toLocaleString('en-US',{month:'long'})})` };
-    case 'last_month': { const s=new Date(today.getFullYear(),today.getMonth()-1,1); const e=new Date(today.getFullYear(),today.getMonth(),0); e.setHours(23,59,59,999); return { start:s, end:e, label:`Last Month (${s.toLocaleString('en-US',{month:'long'})})` }; }
-    case 'ytd': return { start:new Date(today.getFullYear(),0,1), end:today, label:`YTD (${today.getFullYear()})` };
+
+  switch(period) {
+    case 'this_week': return { start: monday, end: today, label: `This Week (${fmtD(monday)} → today)` };
+    case 'last_week': {
+      const s = addDays(monday, -7), e = addDays(monday, -1);
+      e.setHours(23,59,59,999);
+      return { start: s, end: e, label: `Last Week (${fmtD(s)} → ${fmtD(e)})` };
+    }
+    case 'last_4w': return { start: addDays(monday, -28), end: today, label: 'Last 4 Weeks' };
+    case 'last_8w': return { start: addDays(monday, -56), end: today, label: 'Last 8 Weeks' };
+    case 'mtd': return { start: startOfMonth(today), end: today, label: `MTD (${today.toLocaleString('en-US',{month:'long'})})` };
+    case 'last_month': {
+      const s = startOfMonth(new Date(today.getFullYear(), today.getMonth()-1, 1));
+      const e = endOfMonth(s);
+      return { start: s, end: e, label: `Last Month (${s.toLocaleString('en-US',{month:'long'})})` };
+    }
+    case 'ytd': return { start: startOfYear(today), end: today, label: `YTD (${today.getFullYear()})` };
+    case 'all': return { start: new Date(2020, 0, 1), end: today, label: 'All-Time' };
+    case 'custom': {
+      if (!customStart || !customEnd) return { start: monday, end: today, label: 'Pick dates →' };
+      const s = new Date(customStart + 'T00:00:00');
+      const e = new Date(customEnd + 'T23:59:59');
+      return { start: s, end: e, label: `Custom (${fmtD(s)} → ${fmtD(e)})` };
+    }
   }
 }
 
-// ---------- Format helpers ----------
-const fmtN = n => (n==null||isNaN(+n))?'—':Number(n).toLocaleString('en-US');
-const fmt1 = n => (n==null||isNaN(+n))?'—':Number(n).toLocaleString('en-US',{maximumFractionDigits:1});
-const fmt$ = n => { if(n==null||isNaN(+n))return'—'; const v=+n; if(Math.abs(v)>=1e6)return'$'+(v/1e6).toFixed(2)+'M'; if(Math.abs(v)>=1e4)return'$'+Math.round(v/1e3)+'k'; return '$'+Math.round(v).toLocaleString('en-US'); };
-const fmt$0 = n => (n==null||isNaN(+n))?'—':'$'+Math.round(Number(n)).toLocaleString('en-US');
-const fmtPct = n => (n==null||isNaN(+n))?'—':Number(n).toFixed(1)+'%';
-const fmtPctRaw = n => (n==null||isNaN(+n))?'—':Number(n).toFixed(0)+'%';
-const fmtX = n => (n==null||isNaN(+n))?'—':Number(n).toFixed(1)+'x';
-const fmtD = d => !d?'—':((typeof d==='string')?new Date(d):d).toLocaleDateString('en-US',{month:'short',day:'numeric'});
-const fmtDate = d => !d?'—':((typeof d==='string')?new Date(d):d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'});
+//=============================================================================
+// FORMAT HELPERS
+//=============================================================================
+const fmtN = n => (n==null||isNaN(+n)) ? '—' : Number(n).toLocaleString('en-US');
+const fmt1 = n => (n==null||isNaN(+n)) ? '—' : Number(n).toLocaleString('en-US',{maximumFractionDigits:1});
+const fmt2 = n => (n==null||isNaN(+n)) ? '—' : Number(n).toLocaleString('en-US',{maximumFractionDigits:2});
+function fmt$(n) {
+  if (n==null||isNaN(+n)) return '—';
+  const v = +n;
+  if (Math.abs(v) >= 1e6) return (v<0?'-':'') + '$' + (Math.abs(v)/1e6).toFixed(2) + 'M';
+  if (Math.abs(v) >= 1e4) return (v<0?'-':'') + '$' + Math.round(Math.abs(v)/1e3) + 'k';
+  return (v<0?'-':'') + '$' + Math.round(Math.abs(v)).toLocaleString('en-US');
+}
+const fmt$0 = n => (n==null||isNaN(+n)) ? '—' : '$' + Math.round(Number(n)).toLocaleString('en-US');
+const fmtPct = n => (n==null||isNaN(+n)) ? '—' : Number(n).toFixed(1) + '%';
+const fmtRatio = (top, bot) => (!top || !bot || +bot === 0) ? '—' : (Number(top)/Number(bot)).toFixed(1) + 'x';
+const fmtHrs = sec => (sec==null||isNaN(+sec)) ? '—' : (Number(sec)/3600).toFixed(1) + 'h';
+const fmtD = d => !d ? '—' : ((typeof d === 'string') ? new Date(d) : d).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+const fmtDate = d => !d ? '—' : ((typeof d === 'string') ? new Date(d) : d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'});
+const fmtMonth = d => !d ? '—' : ((typeof d === 'string') ? new Date(d) : d).toLocaleDateString('en-US',{month:'short',year:'numeric'});
+function inRange(dateVal, start, end) {
+  if (!dateVal) return false;
+  const d = new Date(dateVal);
+  return d >= start && d <= end;
+}
 
-// ---------- Threshold pill ----------
-function pill(kpiName, value){
-  const t = state.data.thresholds?.find(x=>x.kpi_name===kpiName);
-  if(!t || value==null) return '';
-  const v=+value;
-  const inR = (min,max) => (min==null||v>=+min) && (max==null||v<=+max);
-  if(t.green_min!=null||t.green_max!=null) if(inR(t.green_min,t.green_max)) return '<span class="pill pill-g">GREEN</span>';
-  if(t.yellow_min!=null||t.yellow_max!=null) if(inR(t.yellow_min,t.yellow_max)) return '<span class="pill pill-y">YELLOW</span>';
-  if(t.red_min!=null||t.red_max!=null) if(inR(t.red_min,t.red_max)) return '<span class="pill pill-r">RED</span>';
-  // If above max or below min thresholds without yellow set, pick best guess
-  if(t.green_min!=null && v >= t.green_min) return '<span class="pill pill-g">GREEN</span>';
-  if(t.green_min!=null && v < t.green_min) return '<span class="pill pill-r">RED</span>';
+//=============================================================================
+// PILL (KPI green/yellow/red)
+//=============================================================================
+function pill(kpiName, value) {
+  const t = (state.data.thresholds || []).find(x => x.kpi_name === kpiName);
+  if (!t || value == null) return '';
+  const v = +value;
+  const inR = (min, max) => (min == null || v >= +min) && (max == null || v <= +max);
+  if (t.green_min != null || t.green_max != null) if (inR(t.green_min, t.green_max)) return ' <span class="pill pill-g">GREEN</span>';
+  if (t.yellow_min != null || t.yellow_max != null) if (inR(t.yellow_min, t.yellow_max)) return ' <span class="pill pill-y">YELLOW</span>';
+  if (t.red_min != null || t.red_max != null) if (inR(t.red_min, t.red_max)) return ' <span class="pill pill-r">RED</span>';
+  if (t.direction === 'higher_better' && t.green_min != null) {
+    if (v >= +t.green_min) return ' <span class="pill pill-g">GREEN</span>';
+    return ' <span class="pill pill-r">RED</span>';
+  }
+  if (t.direction === 'lower_better' && t.red_max != null) {
+    if (v >= +t.red_max) return ' <span class="pill pill-r">RED</span>';
+    return ' <span class="pill pill-g">GREEN</span>';
+  }
   return '';
 }
 
-function strategyClass(s){
-  if(!s) return 'pill-strategy';
-  if(s.includes('Double')) return 'pill-strategy dc';
-  if(s.includes('Assignment')) return 'pill-strategy as';
-  if(s.includes('Subdivide')) return 'pill-strategy sd';
+function strategyClass(s) {
+  if (!s) return 'pill-strategy';
+  if (s.includes('Double')) return 'pill-strategy dc';
+  if (s.includes('Assignment')) return 'pill-strategy as';
+  if (s.includes('Subdivide')) return 'pill-strategy sd';
   return 'pill-strategy';
 }
 
-function card(label, value, sub='', threshKpi='', accent=''){
-  return `<div class="kpi-card${accent ? ' '+accent : ''}">
-    <div class="kpi-label">${label}${threshKpi ? pill(threshKpi, value) : ''}</div>
+//=============================================================================
+// CARD HELPERS
+//=============================================================================
+function card({ label, value, sub='', threshKpi='', cls='', icon='', clickHandler='' }) {
+  const click = clickHandler ? `class="card click ${cls}" onclick="${clickHandler}"` : `class="card ${cls}"`;
+  return `<div ${click}>
+    <div class="kpi-label">${icon ? `<span class="kpi-icon">${icon}</span>` : ''}${label}${threshKpi ? pill(threshKpi, value) : ''}</div>
     <div class="kpi-value">${value}</div>
     ${sub ? `<div class="kpi-sub">${sub}</div>` : ''}
   </div>`;
 }
 
-function chart(id, type, data, opts={}){
-  if(state.charts[id]) state.charts[id].destroy();
+function makeChart(id, type, data, opts = {}) {
+  if (state.charts[id]) state.charts[id].destroy();
   const ctx = document.getElementById(id);
-  if(!ctx) return;
-  state.charts[id] = new Chart(ctx, { type, data, options:{
-    responsive:true, maintainAspectRatio:true,
-    plugins:{ legend:{ position:'bottom', labels:{ font:{size:11}, padding:14, boxWidth:10 }}},
-    scales: type==='doughnut' ? {} : { x:{ grid:{display:false}, ticks:{font:{size:10}}}, y:{ grid:{color:'#f3f4f6'}, ticks:{font:{size:10}}}},
-    ...opts
-  }});
-}
-
-// ---------- AM filter logic ----------
-function applyAmFilter(deals) {
-  if (state.amFilter === 'all') return deals;
-  if (state.amFilter === 'Unassigned') return deals.filter(d => !d.acquisition_manager);
-  return deals.filter(d => d.acquisition_manager === state.amFilter);
-}
-
-function getMyDeals() {
-  // Active deals filtered by AM selection
-  const all = state.data.vsp || [];
-  const active = all.filter(d => d.is_active && !['Terminated','Closed','Sold'].includes(d.acquisition_status||''));
-  return applyAmFilter(active);
-}
-
-// ---------- RENDERERS ----------
-function renderAll(){
-  const range = getRange(state.filter);
-  document.getElementById('period-label').textContent = range.label;
-
-  // Unassigned banner
-  const unassignedCount = (state.data.vsp || []).filter(d => d.is_active && !d.acquisition_manager 
-    && !['Terminated','Closed','Sold'].includes(d.acquisition_status||'')).length;
-  const ub = document.getElementById('unassigned-banner');
-  if (unassignedCount > 0 && state.amFilter !== 'Unassigned' && state.amFilter !== 'all') {
-    document.getElementById('unassigned-msg').textContent = 
-      `${unassignedCount} deals have no Acquisition Manager assigned in Airtable. They're hidden from this view.`;
-    ub.hidden = false;
-  } else {
-    ub.hidden = true;
-  }
-
-  renderDay(range);
-  renderScorecard(range);
-  renderPipeline(range);
-  renderListings(range);
-  renderProfit(range);
-  renderGrowth();
-}
-
-// ===========================================
-// MY DAY
-// ===========================================
-function renderDay(range){
-  const myDeals = getMyDeals();
-  const today = new Date(); today.setHours(0,0,0,0);
-  const monday = getMonday(new Date());
-
-  // This week's call activity for Jonathan from quo_daily
-  const recentQuoDays = (state.data.quoD || []).filter(q => {
-    const d = new Date(q.date);
-    return q.user_name === 'Jonathan' && d >= monday;
+  if (!ctx) return;
+  state.charts[id] = new Chart(ctx, {
+    type, data,
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 14, boxWidth: 10 }}},
+      scales: type === 'doughnut' || type === 'pie' ? {} : {
+        x: { grid: { display: false }, ticks: { font: { size: 10 }}},
+        y: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 }}}
+      },
+      ...opts
+    }
   });
-  const weekCalls = recentQuoDays.reduce((s,r) => s + (+r.total_calls || 0), 0);
-  const weekTalk = recentQuoDays.reduce((s,r) => s + (+r.talk_time_seconds || 0), 0) / 3600;
-  const weekTexts = recentQuoDays.reduce((s,r) => s + (+r.texts_sent || 0), 0);
+}
 
-  // Most recent week's funnel from v_am_weekly_scorecard
-  const recentWeek = (state.data.am || [])[0] || {};
+//=============================================================================
+// RENDER ALL
+//=============================================================================
+function renderAll() {
+  const range = getRange(state.period, state.customStart, state.customEnd);
+  document.getElementById('period-display').textContent = range.label;
 
-  // Glance row — what happened this week
-  document.getElementById('day-glance').innerHTML = [
-    card('Calls This Week', fmtN(weekCalls), `${fmt1(weekTalk)} hrs talk · ${fmtN(weekTexts)} texts`),
-    card('New Leads', fmtN(recentWeek.new_leads), `for week of ${fmtD(recentWeek.week_start)}`),
-    card('Qualified', fmtN(recentWeek.new_qualified), '', 'qualified_leads_all'),
-    card('Offers Made', fmtN(recentWeek.offers_made), '', 'offers_made')
-  ].join('');
+  renderPulse(range);
+  renderPerformance(range);
+  renderPipeline(range);
+  renderProfit(range);
+  renderActivity(range);
+}
 
-  // Goals row — vs targets
-  const netContracts = recentWeek.net_contracts;
-  document.getElementById('day-goals').innerHTML = [
-    card('Net Contracts', fmtN(netContracts), `${fmtN(recentWeek.new_contracts)} new · ${fmtN(recentWeek.terminated)} terminated`, 'deals_under_contract'),
-    card('Qualification Rate', recentWeek.new_leads > 0 ? fmtPct(recentWeek.new_qualified / recentWeek.new_leads * 100) : '—', 'leads → qualified', 'qualification_rate'),
-    card('Offer → UC Rate', recentWeek.offers_made > 0 ? fmtPct(recentWeek.new_contracts / recentWeek.offers_made * 100) : '—', 'offers → contracts'),
-    card('Contracts (Source Mix)', fmtN(recentWeek.new_contracts), 
-      `CC ${fmtN(recentWeek.contracts_cc)} · SMS ${fmtN(recentWeek.contracts_sms)} · DM ${fmtN(recentWeek.contracts_dm)} · IB ${fmtN(recentWeek.contracts_inbound)}`)
-  ].join('');
+//=============================================================================
+// PULSE TAB
+//=============================================================================
+function renderPulse(range) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const monday = getMonday(today);
+  const endOfWeek = today;
+  const sevenDaysOut = addDays(today, 7);
+  const sixtyDaysAgo = addDays(today, -60);
+
+  const pipeline = state.data.pipeline || [];
+  const activeP = pipeline.filter(d => d.is_active);
 
   // ─── Hot lists ───
-  const sevenDaysOut = addDays(today, 7);
-  const fourteenDaysOut = addDays(today, 14);
-
-  // Closing this week
-  const closingSoon = myDeals
-    .filter(d => d.end_buyer_close_date && new Date(d.end_buyer_close_date) >= today && new Date(d.end_buyer_close_date) <= sevenDaysOut)
-    .sort((a,b) => new Date(a.end_buyer_close_date) - new Date(b.end_buyer_close_date));
-  document.getElementById('hot-closing').innerHTML = closingSoon.length === 0 
+  // Buy-side closings (we pay seller, close_date this week)
+  const buySoon = pipeline
+    .filter(d => d.close_date && d.acquisition_status !== 'Closed' && d.acquisition_status !== 'Terminated')
+    .filter(d => {
+      const cd = new Date(d.close_date);
+      return cd >= today && cd <= sevenDaysOut;
+    })
+    .sort((a,b) => new Date(a.close_date) - new Date(b.close_date));
+  document.getElementById('hot-buy-closing').innerHTML = buySoon.length === 0
     ? '<div class="hot-empty">Nothing closing this week</div>'
-    : closingSoon.slice(0,6).map(d => `
-      <div class="hot-row">
+    : buySoon.slice(0,5).map(d => `<div class="hot-row">
         <div>
           <div class="name">${d.deal_name||'—'}</div>
-          <div class="meta">${d.acquisition_status||'—'} · ${d.state||''}</div>
+          <div class="meta">${d.county||''}, ${d.state||''} · ${fmt1(d.acreage)} ac</div>
+        </div>
+        <div class="right">
+          <div>${fmtDate(d.close_date)}</div>
+          <div class="text-strong">${fmt$(d.purchase_price)}</div>
+        </div>
+      </div>`).join('');
+
+  // Sell-side closings (buyer pays us)
+  const sellSoon = pipeline
+    .filter(d => d.end_buyer_close_date && d.end_buyer_status !== 'Sold')
+    .filter(d => {
+      const cd = new Date(d.end_buyer_close_date);
+      return cd >= today && cd <= sevenDaysOut;
+    })
+    .sort((a,b) => new Date(a.end_buyer_close_date) - new Date(b.end_buyer_close_date));
+  document.getElementById('hot-sell-closing').innerHTML = sellSoon.length === 0
+    ? '<div class="hot-empty">No buyer closes this week</div>'
+    : sellSoon.slice(0,5).map(d => `<div class="hot-row">
+        <div>
+          <div class="name">${d.deal_name||'—'}</div>
+          <div class="meta">${d.end_buyer_status||''}</div>
         </div>
         <div class="right">
           <div>${fmtDate(d.end_buyer_close_date)}</div>
-          <div style="font-size:11px;color:#10b981">${fmt$(d.estimated_pa_net||d.projected_profit)}</div>
+          <div class="text-emerald text-strong">${fmt$(d.bucket_profit)}</div>
         </div>
       </div>`).join('');
 
   // DD deadlines this week
-  const ddDue = myDeals
-    .filter(d => d.dd_deadline && new Date(d.dd_deadline) >= today && new Date(d.dd_deadline) <= sevenDaysOut)
+  const ddDue = activeP
+    .filter(d => d.dd_deadline && d.acquisition_status === 'Due Diligence')
+    .filter(d => {
+      const dd = new Date(d.dd_deadline);
+      return dd >= today && dd <= sevenDaysOut;
+    })
     .sort((a,b) => new Date(a.dd_deadline) - new Date(b.dd_deadline));
   document.getElementById('hot-dd').innerHTML = ddDue.length === 0
     ? '<div class="hot-empty">No DD deadlines this week</div>'
-    : ddDue.slice(0,6).map(d => `
-      <div class="hot-row">
+    : ddDue.slice(0,5).map(d => `<div class="hot-row">
         <div>
           <div class="name">${d.deal_name||'—'}</div>
           <div class="meta">${d.state||''} · ${fmt1(d.acreage)} ac</div>
         </div>
         <div class="right">
           <div>${fmtDate(d.dd_deadline)}</div>
-          <div style="font-size:11px">DD due</div>
+          <div class="text-amber">DD due</div>
         </div>
       </div>`).join('');
 
-  // EMD coming due (use raw deal_tracker since v_sales_pipeline doesn't have emd_due_date)
-  const allDt = (state.data.vsp || []);
-  const myDealsByName = new Set(myDeals.map(d => d.deal_name));
-  // Note: emd_due_date is in deal_tracker but not in v_sales_pipeline, so we filter myDeals by name match if needed
-  // For now just show deals with EMD not yet deposited — use myDeals
-  const emdRisk = myDeals
-    .filter(d => d.emd_amount > 0 && !d.emd_deposited)
-    .sort((a,b) => (b.emd_amount||0) - (a.emd_amount||0));
-  document.getElementById('hot-emd').innerHTML = emdRisk.length === 0
-    ? '<div class="hot-empty">All EMDs deposited</div>'
-    : emdRisk.slice(0,6).map(d => `
-      <div class="hot-row">
-        <div>
-          <div class="name">${d.deal_name||'—'}</div>
-          <div class="meta">${d.acquisition_status||'—'}</div>
-        </div>
-        <div class="right">
-          <div>${fmt$(d.emd_amount)}</div>
-          <div style="font-size:11px;color:#f59e0b">not deposited</div>
-        </div>
-      </div>`).join('');
+  // Stale listings: listed >60 days, no buyer
+  const staleListings = activeP
+    .filter(d => d.date_listed && (!d.end_buyer_status || d.end_buyer_status === 'No Buyer' || d.end_buyer_status === 'Marketing'))
+    .filter(d => new Date(d.date_listed) < sixtyDaysAgo)
+    .sort((a,b) => new Date(a.date_listed) - new Date(b.date_listed));
+  document.getElementById('hot-stale-listings').innerHTML = staleListings.length === 0
+    ? '<div class="hot-empty">No stale listings 🎉</div>'
+    : staleListings.slice(0,5).map(d => {
+        const daysListed = Math.floor((today - new Date(d.date_listed)) / 86400000);
+        return `<div class="hot-row">
+          <div>
+            <div class="name">${d.deal_name||'—'}</div>
+            <div class="meta">${d.state||''} · ${fmt$(d.listing_price)} list</div>
+          </div>
+          <div class="right">
+            <div>${daysListed}d listed</div>
+            <div class="text-rose">stale</div>
+          </div>
+        </div>`;
+      }).join('');
 
-  // Stale deals — from v_stale_deals filtered by AM (Jonathan owns deals in Pipedrive)
-  const staleAll = state.data.stale || [];
-  const staleMine = staleAll.filter(s => 
-    state.amFilter === 'all' || 
-    (state.amFilter === 'Jonathan' && (s.owner_name||'').toLowerCase().includes('jonathan')) ||
-    (state.amFilter === 'Unassigned' && !s.owner_name)
-  );
-  document.getElementById('hot-stale').innerHTML = staleMine.length === 0
-    ? '<div class="hot-empty">No stale deals</div>'
-    : staleMine.slice(0,6).map(d => `
-      <div class="hot-row">
-        <div>
-          <div class="name">${d.title||'—'}</div>
-          <div class="meta">${d.stage_name||''} · ${d.lead_source||''}</div>
-        </div>
-        <div class="right">
-          <div>${fmtN(d.days_since_update)} days</div>
-          <div style="font-size:11px;color:#6b7280">no update</div>
-        </div>
-      </div>`).join('');
+  // ─── This Week So Far ───
+  const thisWeekRow = (state.data.weekly || []).find(w =>
+    new Date(w.week_start).getTime() === monday.getTime()
+  ) || {};
 
-  // ─── Pipeline snapshot ───
-  const totalProj = myDeals.reduce((s,d) => s + (+d.projected_profit || 0), 0);
-  const totalPaCash = myDeals.reduce((s,d) => s + (+d.pa_cash_out_of_pocket || 0), 0);
-  const totalEmdAtRisk = myDeals.reduce((s,d) => s + (d.emd_deposited ? (+d.emd_amount || 0) : 0), 0);
-  document.getElementById('day-snapshot').innerHTML = [
-    card('My Active Deals', fmtN(myDeals.length), `${state.amFilter === 'all' ? 'all AMs' : state.amFilter}`, '', 'accent'),
-    card('Projected Profit', fmt$(totalProj), 'across my pipeline', '', 'accent'),
-    card('PA Cash at Risk', fmt$(totalPaCash), 'capital deployed'),
-    card('EMD Deposited', fmt$(totalEmdAtRisk), 'currently in escrow')
+  document.getElementById('pulse-week').innerHTML = [
+    card({ label:'Calls', value: fmtN(thisWeekRow.total_calls), sub: `${fmt1(thisWeekRow.talk_time_hours||0)} hrs talk`, icon:'📞' }),
+    card({ label:'Texts Sent', value: fmtN(thisWeekRow.texts_sent), icon:'💬' }),
+    card({ label:'Leads (Team)', value: fmtN(thisWeekRow.new_leads), sub:'company-wide funnel' }),
+    card({ label:'Qualified (Team)', value: fmtN(thisWeekRow.new_qualified) })
+  ].join('');
+
+  // ─── Goals ───
+  document.getElementById('pulse-goals').innerHTML = [
+    card({ label:'New Contracts', value: fmtN(thisWeekRow.new_contracts), sub:'goal: 4/wk', threshKpi:'deals_under_contract', icon:'✍️' }),
+    card({ label:'Offers (Team)', value: fmtN(thisWeekRow.offers_made), sub:'goal: 20/wk', threshKpi:'offers_made', icon:'🎯' }),
+    card({ label:'Terminated', value: fmtN(thisWeekRow.terminated), sub:'tracked separately', cls: thisWeekRow.terminated > 0 ? 'term' : '' }),
+    card({ label:'Realized $ (Closed)', value: fmt$(thisWeekRow.realized_profit), sub:`${fmtN(thisWeekRow.deals_closed||0)} deals closed`, cls:'realized' })
+  ].join('');
+
+  // ─── Pipeline Snapshot ───
+  const buckets = activeP.reduce((acc, d) => {
+    const b = d.profit_bucket || 'PROJECTED';
+    acc[b] = (acc[b] || 0) + 1;
+    acc[`${b}_$`] = (acc[`${b}_$`] || 0) + (+d.bucket_profit || 0);
+    return acc;
+  }, {});
+  // Realized this year
+  const today2 = new Date(); today2.setHours(0,0,0,0);
+  const yearStart = startOfYear(today2);
+  const realizedYTD = pipeline
+    .filter(d => d.profit_bucket === 'REALIZED' && d.actual_close_date && new Date(d.actual_close_date) >= yearStart)
+    .reduce((s,d) => s + (+d.bucket_profit || 0), 0);
+
+  document.getElementById('pulse-snapshot').innerHTML = [
+    card({ label:'Active Deals', value: fmtN(activeP.length), sub:`PROJ ${buckets.PROJECTED||0} · LOCK ${buckets.LOCKED||0}`, icon:'📋' }),
+    card({ label:'Projected Profit', value: fmt$(buckets.PROJECTED_$||0), sub:`across ${buckets.PROJECTED||0} deals`, cls:'proj', clickHandler:`showDrillDown('PROJECTED')` }),
+    card({ label:'Locked Profit', value: fmt$(buckets.LOCKED_$||0), sub:`across ${buckets.LOCKED||0} deals`, cls:'locked', clickHandler:`showDrillDown('LOCKED')` }),
+    card({ label:'Realized YTD', value: fmt$(realizedYTD), sub:`${today.getFullYear()} so far`, cls:'realized', clickHandler:`showDrillDown('REALIZED')` })
   ].join('');
 }
 
-// ===========================================
-// SCORECARD
-// ===========================================
-function renderScorecard(range){
-  const am = state.data.am || [];
-  const last8 = am.slice(0, 8);
+//=============================================================================
+// PERFORMANCE TAB
+//=============================================================================
+function renderPerformance(range) {
+  const allWeekly = state.data.weekly || [];
+  // Filter by period range
+  const inPeriod = allWeekly.filter(w => {
+    const ws = new Date(w.week_start);
+    return ws >= range.start && ws <= range.end;
+  });
 
-  // Weekly funnel table
-  const tbl = `<table class="dt">
+  // ─── Ledger table ───
+  const rows = inPeriod.map(w => {
+    const goalPill = pill('deals_under_contract', w.new_contracts);
+    return `<tr>
+      <td><b>${fmtD(w.week_start)}</b></td>
+      <td class="num">${fmtN(w.total_calls)}</td>
+      <td class="num">${fmt2(w.talk_time_hours)}</td>
+      <td class="num">${fmtN(w.texts_sent)}</td>
+      <td class="num">${fmtN(w.new_leads)}</td>
+      <td class="num">${fmtN(w.new_qualified)}</td>
+      <td class="num">${fmtN(w.offers_made)}</td>
+      <td class="num"><b>${fmtN(w.new_contracts)}</b>${goalPill}</td>
+      <td class="num">${w.terminated > 0 ? `<span class="text-rose">${fmtN(w.terminated)}</span>` : '0'}</td>
+      <td class="num">${fmtN(w.deals_closed)}</td>
+      <td class="num text-emerald">${fmt$(w.realized_profit)}</td>
+      <td class="num">${w.talk_hours_per_contract != null ? fmt2(w.talk_hours_per_contract) + ' hrs' : '—'}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('perf-ledger').innerHTML = `<table class="dt">
     <thead><tr>
       <th>Week</th>
+      <th class="num">Calls</th>
+      <th class="num">Talk Hrs</th>
+      <th class="num">Texts</th>
       <th class="num">Leads</th>
-      <th class="num">Qualified</th>
-      <th class="num">Q Rate</th>
+      <th class="num">Qual</th>
       <th class="num">Offers</th>
       <th class="num">Contracts</th>
-      <th class="num">Terminated</th>
-      <th class="num">Net</th>
-      <th class="num">vs Goal</th>
+      <th class="num">Term'd</th>
+      <th class="num">Closed</th>
+      <th class="num">Realized</th>
+      <th class="num">Talk/Contract</th>
     </tr></thead>
-    <tbody>${last8.map(w => {
-      const qRate = w.new_leads > 0 ? (w.new_qualified / w.new_leads * 100) : null;
-      const goalPill = pill('deals_under_contract', w.net_contracts);
-      return `<tr>
-        <td><b>${fmtD(w.week_start)}</b></td>
-        <td class="num">${fmtN(w.new_leads)}</td>
-        <td class="num">${fmtN(w.new_qualified)}</td>
-        <td class="num">${qRate !== null ? fmtPct(qRate) : '—'}</td>
-        <td class="num">${fmtN(w.offers_made)}</td>
-        <td class="num">${fmtN(w.new_contracts)}</td>
-        <td class="num">${fmtN(w.terminated)}</td>
-        <td class="num"><b>${fmtN(w.net_contracts)}</b></td>
-        <td class="num">${goalPill}</td>
-      </tr>`;
-    }).join('')}</tbody>
+    <tbody>${rows || `<tr><td colspan="12" style="text-align:center;color:#9ca3af;padding:24px">No weeks in this period</td></tr>`}</tbody>
   </table>`;
-  document.getElementById('scorecard-table').innerHTML = tbl;
 
-  // Funnel trend chart (last 16 weeks, oldest first)
-  const trend = am.slice(0, 16).reverse();
-  chart('c-funnel-trend', 'line', {
-    labels: trend.map(w => fmtD(w.week_start)),
+  // ─── Conversion funnel (period aggregate) ───
+  const tot = inPeriod.reduce((acc, w) => ({
+    leads: (acc.leads||0) + (+w.new_leads||0),
+    qualified: (acc.qualified||0) + (+w.new_qualified||0),
+    offers: (acc.offers||0) + (+w.offers_made||0),
+    contracts: (acc.contracts||0) + (+w.new_contracts||0),
+    terminated: (acc.terminated||0) + (+w.terminated||0),
+    closed: (acc.closed||0) + (+w.deals_closed||0)
+  }), {});
+  document.getElementById('perf-conversion').innerHTML = [
+    card({ label:'Leads', value: fmtN(tot.leads), sub:'company-wide' }),
+    card({ label:'Leads → Qualified', value: fmtRatio(tot.leads, tot.qualified), sub:`${fmtN(tot.qualified)} qualified` }),
+    card({ label:'Qualified → Offer', value: fmtRatio(tot.qualified, tot.offers), sub:`${fmtN(tot.offers)} offers` }),
+    card({ label:'Offer → Contract', value: fmtRatio(tot.offers, tot.contracts), sub:`${fmtN(tot.contracts)} contracts`, cls:'accent' })
+  ].join('');
+
+  // ─── Activity-to-outcome efficiency ───
+  const totCalls = inPeriod.reduce((s,w) => s + (+w.total_calls||0), 0);
+  const totTalkHrs = inPeriod.reduce((s,w) => s + (+w.talk_time_hours||0), 0);
+  const totTexts = inPeriod.reduce((s,w) => s + (+w.texts_sent||0), 0);
+  const callsPerContract = tot.contracts > 0 ? (totCalls / tot.contracts).toFixed(1) : null;
+  const talkPerContract = tot.contracts > 0 ? (totTalkHrs / tot.contracts).toFixed(2) : null;
+  const talkPerOffer = tot.offers > 0 ? (totTalkHrs / tot.offers).toFixed(2) : null;
+  document.getElementById('perf-efficiency').innerHTML = [
+    card({ label:'Total Calls', value: fmtN(totCalls), sub:`${fmt1(totTalkHrs)} hrs talk · ${fmtN(totTexts)} texts` }),
+    card({ label:'Calls per Contract', value: callsPerContract != null ? `${callsPerContract}` : '—', sub:'lower = better' }),
+    card({ label:'Talk Hrs per Contract', value: talkPerContract != null ? `${talkPerContract} hrs` : '—', sub:'lower = better', cls:'accent' }),
+    card({ label:'Talk Hrs per Offer', value: talkPerOffer != null ? `${talkPerOffer} hrs` : '—', sub:'lower = better' })
+  ].join('');
+
+  // ─── Trend charts (use last 16 weeks regardless of filter, for trend stability) ───
+  const trendWeeks = allWeekly.slice(0, 16).reverse();
+  const labels = trendWeeks.map(w => fmtD(w.week_start));
+
+  makeChart('c-perf-funnel', 'line', {
+    labels,
     datasets: [
-      { label:'Leads', data:trend.map(w=>+w.new_leads||0), borderColor:'#94a3b8', backgroundColor:'#94a3b820', tension:0.3 },
-      { label:'Qualified', data:trend.map(w=>+w.new_qualified||0), borderColor:'#3b82f6', backgroundColor:'#3b82f620', tension:0.3 },
-      { label:'Offers', data:trend.map(w=>+w.offers_made||0), borderColor:'#f59e0b', backgroundColor:'#f59e0b20', tension:0.3 },
-      { label:'Contracts', data:trend.map(w=>+w.new_contracts||0), borderColor:'#10b981', backgroundColor:'#10b98120', tension:0.3 }
+      { label:'Leads', data: trendWeeks.map(w=>+w.new_leads||0), borderColor:'#94a3b8', backgroundColor:'#94a3b820', tension:0.3 },
+      { label:'Qualified', data: trendWeeks.map(w=>+w.new_qualified||0), borderColor:'#3b82f6', backgroundColor:'#3b82f620', tension:0.3 },
+      { label:'Offers', data: trendWeeks.map(w=>+w.offers_made||0), borderColor:'#f59e0b', backgroundColor:'#f59e0b20', tension:0.3 },
+      { label:'Contracts', data: trendWeeks.map(w=>+w.new_contracts||0), borderColor:'#10b981', backgroundColor:'#10b98120', tension:0.3 }
     ]
   });
 
-  // Source mix doughnut (sum across last 8 weeks)
-  const ccTotal = last8.reduce((s,w)=>s+(+w.contracts_cc||0),0);
-  const smsTotal = last8.reduce((s,w)=>s+(+w.contracts_sms||0),0);
-  const dmTotal = last8.reduce((s,w)=>s+(+w.contracts_dm||0),0);
-  const ibTotal = last8.reduce((s,w)=>s+(+w.contracts_inbound||0),0);
-  chart('c-source-mix', 'doughnut', {
-    labels: ['Cold Call','SMS','Direct Mail','Inbound'],
-    datasets: [{ data:[ccTotal,smsTotal,dmTotal,ibTotal], backgroundColor:['#3b82f6','#10b981','#f59e0b','#a78bfa'] }]
+  makeChart('c-perf-talk-per-contract', 'bar', {
+    labels,
+    datasets: [{
+      label:'Talk Hrs / Contract',
+      data: trendWeeks.map(w => w.new_contracts > 0 ? +(w.talk_time_hours / w.new_contracts).toFixed(2) : null),
+      backgroundColor:'#10b981'
+    }]
   });
 
-  // Conversion efficiency cards (8-week aggregates)
-  const tot8 = last8.reduce((acc,w) => ({
-    leads:(acc.leads||0)+(+w.new_leads||0),
-    qualified:(acc.qualified||0)+(+w.new_qualified||0),
-    offers:(acc.offers||0)+(+w.offers_made||0),
-    contracts:(acc.contracts||0)+(+w.new_contracts||0)
-  }), {});
-  const lq = tot8.leads>0 ? (tot8.qualified/tot8.leads*100) : null;
-  const qo = tot8.qualified>0 ? (tot8.offers/tot8.qualified*100) : null;
-  const oc = tot8.offers>0 ? (tot8.contracts/tot8.offers*100) : null;
-  const lc = tot8.leads>0 ? (tot8.contracts/tot8.leads*100) : null;
-  document.getElementById('conv-cards').innerHTML = [
-    card('Lead → Qualified', fmtPct(lq), `${fmtN(tot8.qualified)}/${fmtN(tot8.leads)} · last 8 wks`),
-    card('Qualified → Offer', fmtPct(qo), `${fmtN(tot8.offers)}/${fmtN(tot8.qualified)} · last 8 wks`),
-    card('Offer → Contract', fmtPct(oc), `${fmtN(tot8.contracts)}/${fmtN(tot8.offers)} · last 8 wks`),
-    card('Lead → Contract', fmtPct(lc), `Overall conversion`, '', 'accent')
-  ].join('');
+  makeChart('c-perf-ratios', 'line', {
+    labels,
+    datasets: [
+      { label:'Lead → Qual', data: trendWeeks.map(w => w.new_qualified > 0 ? +(w.new_leads / w.new_qualified).toFixed(1) : null), borderColor:'#3b82f6', tension:0.3 },
+      { label:'Qual → Offer', data: trendWeeks.map(w => w.offers_made > 0 ? +(w.new_qualified / w.offers_made).toFixed(1) : null), borderColor:'#f59e0b', tension:0.3 },
+      { label:'Offer → Contract', data: trendWeeks.map(w => w.new_contracts > 0 ? +(w.offers_made / w.new_contracts).toFixed(1) : null), borderColor:'#10b981', tension:0.3 }
+    ]
+  });
 
-  // Monthly roll-up
-  const monthly = state.data.amMonth || [];
-  const mtbl = `<table class="dt">
-    <thead><tr>
-      <th>Month</th>
-      <th class="num">Leads</th>
-      <th class="num">Qualified</th>
-      <th class="num">Offers</th>
-      <th class="num">Contracts</th>
-      <th class="num">Terminated</th>
-      <th class="num">Net</th>
-      <th class="num">L→Q</th>
-      <th class="num">Q→O</th>
-      <th class="num">O→C</th>
-    </tr></thead>
-    <tbody>${monthly.map(m => `<tr>
-      <td><b>${m.month ? new Date(m.month).toLocaleDateString('en-US',{month:'short',year:'numeric'}) : '—'}</b></td>
-      <td class="num">${fmtN(m.new_leads)}</td>
-      <td class="num">${fmtN(m.new_qualified)}</td>
-      <td class="num">${fmtN(m.offers_made)}</td>
-      <td class="num">${fmtN(m.new_contracts)}</td>
-      <td class="num">${fmtN(m.terminated)}</td>
-      <td class="num"><b>${fmtN(m.net_contracts)}</b></td>
-      <td class="num">${fmt1(m.leads_per_qualified)}</td>
-      <td class="num">${fmt1(m.qualified_per_offer)}</td>
-      <td class="num">${fmt1(m.offers_per_contract)}</td>
-    </tr>`).join('')}</tbody>
-  </table>`;
-  document.getElementById('monthly-table').innerHTML = mtbl;
+  makeChart('c-perf-activity', 'bar', {
+    labels,
+    datasets: [
+      { label:'Calls', data: trendWeeks.map(w=>+w.total_calls||0), backgroundColor:'#3b82f6', yAxisID:'y' },
+      { label:'Talk Hrs', data: trendWeeks.map(w=>+w.talk_time_hours||0), backgroundColor:'#10b981', yAxisID:'y1', type:'line', tension:0.3, borderColor:'#10b981' }
+    ]
+  }, {
+    scales: {
+      x: { grid:{display:false}, ticks:{font:{size:10}}},
+      y: { grid:{color:'#f3f4f6'}, ticks:{font:{size:10}}, title:{display:true,text:'Calls',font:{size:10}}},
+      y1: { grid:{display:false}, position:'right', ticks:{font:{size:10}}, title:{display:true,text:'Talk Hrs',font:{size:10}}}
+    }
+  });
 }
 
-// ===========================================
-// PIPELINE
-// ===========================================
-function renderPipeline(range){
-  const myDeals = getMyDeals();
+//=============================================================================
+// PIPELINE TAB
+//=============================================================================
+function renderPipeline(range) {
+  const pipeline = state.data.pipeline || [];
+  const activeP = pipeline.filter(d => d.is_active);
 
-  // Status funnel cards
-  const phaseCount = {};
-  myDeals.forEach(d => { phaseCount[d.deal_phase || d.acquisition_status || 'Unknown'] = (phaseCount[d.deal_phase || d.acquisition_status || 'Unknown'] || 0) + 1; });
-  const phases = ['Under Contract','Due Diligence','Site Works','At Closing','Marketing','Buyer Under Contract'];
-  document.getElementById('pl-funnel').innerHTML = phases.map(p => 
-    card(p, fmtN(phaseCount[p] || 0), '', '')
-  ).join('');
+  // ─── Phase distribution ───
+  const phaseOrder = ['Under Contract','Due Diligence','Site Works','At Closing','Closed (Holding)','Marketing','Buyer Under Contract','Buyer Closing'];
+  const phases = activeP.reduce((acc, d) => {
+    const p = d.deal_phase || 'Unknown';
+    if (!acc[p]) acc[p] = { count: 0, value: 0 };
+    acc[p].count++;
+    acc[p].value += (+d.purchase_price || 0);
+    return acc;
+  }, {});
+  const phasesShown = phaseOrder.filter(p => phases[p]).slice(0,8);
+  document.getElementById('pipe-phases').innerHTML = phasesShown.length === 0
+    ? '<div class="card"><div class="kpi-sub">No active deals.</div></div>'
+    : phasesShown.map(p =>
+        card({ label: p, value: fmtN(phases[p].count), sub: fmt$(phases[p].value) + ' total' })
+      ).join('');
 
-  // Capital cards
-  const totalPurchase = myDeals.reduce((s,d) => s + (+d.purchase_price || 0), 0);
-  const totalPaCash = myDeals.reduce((s,d) => s + (+d.pa_cash_out_of_pocket || 0), 0);
-  const totalLoan = myDeals.reduce((s,d) => s + (+d.loan_amount || 0), 0);
-  const totalEmd = myDeals.reduce((s,d) => s + (d.emd_deposited ? (+d.emd_amount || 0) : 0), 0);
-  document.getElementById('pl-capital').innerHTML = [
-    card('Total Purchase Price', fmt$(totalPurchase), `${myDeals.length} active deals`),
-    card('PA Cash Deployed', fmt$(totalPaCash), 'out of pocket'),
-    card('Loan Balance', fmt$(totalLoan), 'financed portion'),
-    card('EMD at Risk', fmt$(totalEmd), 'currently in escrow', '', 'warn')
-  ].join('');
+  // ─── Strategy mix ───
+  const strats = activeP.reduce((acc, d) => {
+    const s = d.closing_type || 'Unspecified';
+    if (!acc[s]) acc[s] = { count: 0, value: 0 };
+    acc[s].count++;
+    acc[s].value += (+d.bucket_profit || 0);
+    return acc;
+  }, {});
+  const stratsList = Object.entries(strats).sort((a,b) => b[1].count - a[1].count).slice(0,4);
+  document.getElementById('pipe-strategy').innerHTML = stratsList.length === 0
+    ? '<div class="card"><div class="kpi-sub">No closing types set.</div></div>'
+    : stratsList.map(([s, info]) =>
+        card({ label: s, value: fmtN(info.count), sub: fmt$(info.value) + ' projected' })
+      ).join('');
 
-  // Profit outlook cards
-  const totalQuick = myDeals.reduce((s,d) => s + (+d.quick_profit_estimate || 0), 0);
-  const totalProj = myDeals.reduce((s,d) => s + (+d.projected_profit || 0), 0);
-  const totalPaNet = myDeals.reduce((s,d) => s + (+d.estimated_pa_net || 0), 0);
-  const roiVals = myDeals.map(d => +d.deal_roi_pct).filter(v => !isNaN(v) && v != null);
-  const irrVals = myDeals.map(d => +d.deal_irr_pct).filter(v => !isNaN(v) && v != null);
-  const avgRoi = roiVals.length ? (roiVals.reduce((a,b)=>a+b,0) / roiVals.length * 100) : null;
-  const avgIrr = irrVals.length ? (irrVals.reduce((a,b)=>a+b,0) / irrVals.length * 100) : null;
-  const daysHeld = myDeals.map(d => +d.days_held).filter(v => !isNaN(v) && v != null);
-  const avgDaysHeld = daysHeld.length ? Math.round(daysHeld.reduce((a,b)=>a+b,0)/daysHeld.length) : null;
-  const totalConfirmed = myDeals.reduce((s,d) => s + (+d.confirmed_profit || 0), 0);
-  document.getElementById('pl-profit').innerHTML = [
-    card('Quick Profit Estimate', fmt$(totalQuick), 'fast back-of-envelope'),
-    card('Projected Profit', fmt$(totalProj), `total across ${myDeals.length} deals`, '', 'accent'),
-    card('Estimated PA Net', fmt$(totalPaNet), 'net to Principal Acres'),
-    card('Avg ROI / IRR', avgRoi !== null ? fmtPctRaw(avgRoi) : '—', `IRR ${avgIrr !== null ? fmtPctRaw(avgIrr) : '—'} · ${avgDaysHeld || '—'}d held`),
-  ].join('');
+  // ─── Currently Listed ───
+  const listings = state.data.listings || [];
+  const listRows = listings.map(l => `<tr>
+    <td><b>${l.deal_name||'—'}</b><div class="meta">${l.county||''}, ${l.state||''} · ${fmt1(l.acreage)} ac</div></td>
+    <td><span class="pill-phase">${l.acquisition_status||'—'}</span></td>
+    <td>${l.closing_type ? `<span class="${strategyClass(l.closing_type)}">${l.closing_type}</span>` : '—'}</td>
+    <td class="num">${fmt$(l.purchase_price)}</td>
+    <td class="num">${fmt$(l.listing_price)}</td>
+    <td class="num text-emerald">${fmt$(l.listing_spread)}</td>
+    <td class="num">${fmt$(l.projected_profit)}</td>
+    <td class="num">${fmtN(l.days_listed)}d</td>
+    <td>${l.end_buyer_status || '—'}</td>
+    <td>${l.listing_url ? `<a href="${l.listing_url}" target="_blank">view ↗</a>` : '—'}</td>
+  </tr>`).join('');
+  document.getElementById('pipe-listings').innerHTML = `<table class="dt">
+    <thead><tr>
+      <th>Deal / Location</th><th>Status</th><th>Strategy</th>
+      <th class="num">Purchase</th><th class="num">List</th><th class="num">Spread</th>
+      <th class="num">Projected</th><th class="num">DoM</th><th>Buyer Status</th><th>URL</th>
+    </tr></thead>
+    <tbody>${listRows || `<tr><td colspan="10" style="text-align:center;color:#9ca3af;padding:24px">No active listings</td></tr>`}</tbody>
+  </table>`;
 
-  // Strategy mix
-  const strategies = {};
-  myDeals.forEach(d => { 
-    const ct = d.closing_type || 'Unknown';
-    strategies[ct] = (strategies[ct] || 0) + 1;
+  // ─── My Active Deals ───
+  const sortedActive = activeP.slice().sort((a,b) => {
+    // Sort by phase order, then by contract_date desc
+    const pa = phaseOrder.indexOf(a.deal_phase);
+    const pb = phaseOrder.indexOf(b.deal_phase);
+    if (pa !== pb) return (pa < 0 ? 999 : pa) - (pb < 0 ? 999 : pb);
+    return new Date(b.contract_date||0) - new Date(a.contract_date||0);
   });
-  const wholesaleCt = (strategies['Assignment']||0) + (strategies['Double Close']||0);
-  const purchaseCt = (strategies['Straight Purchase']||0) + (strategies['Subdivide Purchase']||0);
-  document.getElementById('pl-strategy').innerHTML = [
-    card('Wholesale', fmtN(wholesaleCt), `Assignment ${fmtN(strategies['Assignment']||0)} · Double ${fmtN(strategies['Double Close']||0)}`),
-    card('Purchase', fmtN(purchaseCt), `Straight ${fmtN(strategies['Straight Purchase']||0)} · Subdivide ${fmtN(strategies['Subdivide Purchase']||0)}`),
-    card('Total Active', fmtN(myDeals.length), 'all strategies', '', 'accent'),
-    card('Confirmed Revenue', fmt$(totalConfirmed), 'sale-side locked')
-  ].join('');
-
-  // My Active Deals table
-  const dealRows = myDeals.map(d => `<tr>
-    <td><b>${d.deal_name||'—'}</b><div style="font-size:11px;color:#6b7280">${d.county||''}, ${d.state||''} · ${fmt1(d.acreage)} ac</div></td>
+  const dealRows = sortedActive.map((d, idx) => `<tr class="row-clickable" onclick="showDealDetail('${d.airtable_record_id}')">
+    <td><b>${d.deal_name||'—'}</b><div class="meta">${d.county||''}, ${d.state||''} · ${fmt1(d.acreage)} ac</div></td>
     <td><span class="pill-phase">${d.deal_phase||'—'}</span></td>
+    <td><span class="pill-bucket-${d.profit_bucket}">${d.profit_bucket||'—'}</span></td>
     <td>${d.closing_type ? `<span class="${strategyClass(d.closing_type)}">${d.closing_type}</span>` : '—'}</td>
     <td class="num">${fmtN(d.days_under_contract)}d</td>
     <td class="num">${fmt$(d.purchase_price)}</td>
     <td class="num">${fmt$(d.listing_price)}</td>
-    <td class="num">${fmt$(d.quick_profit_estimate)}</td>
-    <td class="num"><b>${fmt$(d.projected_profit)}</b></td>
-    <td class="num">${fmt$(d.estimated_pa_net)}</td>
-    <td class="num">${d.deal_roi_pct != null ? fmtPctRaw(+d.deal_roi_pct * 100) : '—'}</td>
-    <td class="num">${d.deal_irr_pct != null ? fmtPctRaw(+d.deal_irr_pct * 100) : '—'}</td>
-    <td>${d.acquisition_manager || '<span style="color:#9ca3af">—</span>'}</td>
-    <td>${d.listing_url ? `<a href="${d.listing_url}" target="_blank">link</a>` : '—'}</td>
-  </tr>`).join('');
-  document.getElementById('my-deals').innerHTML = `<table class="dt">
-    <thead><tr>
-      <th>Deal / Location</th><th>Phase</th><th>Strategy</th>
-      <th class="num">Days UC</th><th class="num">Purchase</th><th class="num">List</th>
-      <th class="num">Quick Est</th><th class="num">Projected</th><th class="num">PA Net</th>
-      <th class="num">ROI</th><th class="num">IRR</th><th>AM</th><th>Listing</th>
-    </tr></thead><tbody>${dealRows || '<tr><td colspan="13" style="text-align:center;color:#9ca3af;padding:24px">No active deals match this filter</td></tr>'}</tbody>
-  </table>`;
-}
-
-// ===========================================
-// LISTINGS & SALES
-// ===========================================
-function renderListings(range){
-  const myDeals = getMyDeals();
-  const allListings = state.data.listings || [];
-  // Filter listings by AM if we can match by deal_name
-  const myDealNames = new Set(myDeals.map(d => d.deal_name));
-  const myListings = state.amFilter === 'all' 
-    ? allListings 
-    : allListings.filter(l => myDealNames.has(l.deal_name));
-
-  // Cards
-  const totalListValue = myListings.reduce((s,l) => s + (+l.listing_price || 0), 0);
-  const daysOnMarket = myListings.map(l => +l.days_listed).filter(v => !isNaN(v) && v != null);
-  const avgDom = daysOnMarket.length ? Math.round(daysOnMarket.reduce((a,b)=>a+b,0)/daysOnMarket.length) : null;
-  const avgListPrice = myListings.length ? totalListValue / myListings.length : null;
-  document.getElementById('listings-cards').innerHTML = [
-    card('Currently Listed', fmtN(myListings.length), `${state.amFilter === 'all' ? 'all AMs' : state.amFilter}`, '', 'accent'),
-    card('Total List Value', fmt$(totalListValue), 'asking prices combined'),
-    card('Avg Days on Market', avgDom !== null ? `${avgDom}d` : '—', 'across listed inventory'),
-    card('Avg List Price', avgListPrice !== null ? fmt$(avgListPrice) : '—', 'per listing')
-  ].join('');
-
-  // Currently Listed table
-  const listingsRows = myListings.map(l => `<tr>
-    <td><b>${l.deal_name||'—'}</b><div style="font-size:11px;color:#6b7280">${l.county||''}, ${l.state||''} · ${fmt1(l.acreage)} ac</div></td>
-    <td>${l.closing_type ? `<span class="${strategyClass(l.closing_type)}">${l.closing_type}</span>` : '—'}</td>
-    <td class="num">${fmt$(l.purchase_price)}</td>
-    <td class="num"><b>${fmt$(l.listing_price)}</b></td>
-    <td class="num">${fmt$(l.projected_profit)}</td>
-    <td class="num">${fmtN(l.days_listed)}d</td>
-    <td>${l.listing_platform || '—'}</td>
-    <td>${l.end_buyer_status || '—'}</td>
-    <td>${l.listing_url ? `<a href="${l.listing_url}" target="_blank">view ↗</a>` : '—'}</td>
-  </tr>`).join('');
-  document.getElementById('listings-table').innerHTML = `<table class="dt">
-    <thead><tr>
-      <th>Deal / Location</th><th>Strategy</th>
-      <th class="num">Purchase</th><th class="num">List Price</th><th class="num">Projected</th>
-      <th class="num">DoM</th><th>Platform</th><th>Buyer Status</th><th>URL</th>
-    </tr></thead><tbody>${listingsRows || '<tr><td colspan="9" style="text-align:center;color:#9ca3af;padding:24px">No current listings</td></tr>'}</tbody>
-  </table>`;
-
-  // Should be listed but isn't (past Site Works without listing)
-  const needsListing = myDeals.filter(d => 
-    ['Site Works','With Closing','Closed'].includes(d.acquisition_status||'') &&
-    !d.listing_url &&
-    !['Buyer Under Contract','Buyer Closing','Sold'].includes(d.end_buyer_status||'')
-  );
-  const needRows = needsListing.map(d => `<tr>
-    <td><b>${d.deal_name||'—'}</b><div style="font-size:11px;color:#6b7280">${d.county||''}, ${d.state||''} · ${fmt1(d.acreage)} ac</div></td>
-    <td><span class="pill-phase">${d.acquisition_status||'—'}</span></td>
-    <td class="num">${fmtN(d.days_under_contract)}d</td>
-    <td class="num">${fmt$(d.purchase_price)}</td>
-    <td class="num">${fmt$(d.target_sale_price)}</td>
-    <td class="num">${fmt$(d.projected_profit)}</td>
-    <td>${d.acquisition_manager || '<span style="color:#9ca3af">—</span>'}</td>
-  </tr>`).join('');
-  document.getElementById('needs-listing').innerHTML = `<table class="dt">
-    <thead><tr>
-      <th>Deal / Location</th><th>Status</th>
-      <th class="num">Days UC</th><th class="num">Purchase</th><th class="num">Target Sale</th><th class="num">Projected</th><th>AM</th>
-    </tr></thead><tbody>${needRows || '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:24px">All deals past Site Works are listed ✓</td></tr>'}</tbody>
-  </table>`;
-
-  // Recent Buyer Activity (deals with end_buyer_status not "No Buyer" or null)
-  const buyerActivity = myDeals
-    .filter(d => d.end_buyer_status && !['No Buyer','Marketing'].includes(d.end_buyer_status))
-    .sort((a,b) => new Date(b.end_buyer_uc_date || 0) - new Date(a.end_buyer_uc_date || 0));
-  const buyerRows = buyerActivity.map(d => `<tr>
-    <td><b>${d.deal_name||'—'}</b><div style="font-size:11px;color:#6b7280">${d.state||''}</div></td>
-    <td>${d.end_buyer_status}</td>
     <td class="num">${fmt$(d.end_buyer_contract_price)}</td>
-    <td class="num">${fmt$(d.confirmed_profit)}</td>
-    <td>${fmtDate(d.end_buyer_uc_date)}</td>
-    <td>${fmtDate(d.end_buyer_close_date)}</td>
+    <td class="num text-emerald"><b>${fmt$(d.bucket_profit)}</b></td>
+    <td class="num">${fmtDate(d.dd_deadline)}</td>
+    <td class="num">${fmtDate(d.close_date)}</td>
+    <td class="num">${fmtDate(d.end_buyer_close_date)}</td>
   </tr>`).join('');
-  document.getElementById('recent-buyer').innerHTML = `<table class="dt">
+  document.getElementById('pipe-active').innerHTML = `<table class="dt">
     <thead><tr>
-      <th>Deal</th><th>Buyer Status</th>
-      <th class="num">Buyer Price</th><th class="num">Confirmed Profit</th><th>UC Date</th><th>Close Date</th>
-    </tr></thead><tbody>${buyerRows || '<tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:24px">No buyer activity yet on active deals</td></tr>'}</tbody>
+      <th>Deal / Location</th><th>Phase</th><th>Bucket</th><th>Strategy</th>
+      <th class="num">Days UC</th><th class="num">Purchase</th><th class="num">List</th><th class="num">Buyer $</th><th class="num">Profit</th>
+      <th class="num">DD Due</th><th class="num">Close (Buy)</th><th class="num">Close (Sell)</th>
+    </tr></thead>
+    <tbody>${dealRows || `<tr><td colspan="12" style="text-align:center;color:#9ca3af;padding:24px">No active deals</td></tr>`}</tbody>
   </table>`;
 }
 
-// ===========================================
-// PROFIT & CLOSES
-// ===========================================
-function renderProfit(range){
-  const myDeals = getMyDeals();
-  const profit = state.data.amProfit || [];
+//=============================================================================
+// PROFIT TAB
+//=============================================================================
+function renderProfit(range) {
+  const pipeline = state.data.pipeline || [];
+  const activeP = pipeline.filter(d => d.is_active);
   const today = new Date(); today.setHours(0,0,0,0);
-  
-  // Headline cards
-  const lastMonth = profit[1] || {};
-  const thisMonth = profit[0] || {};
-  const yearProfit = profit.filter(m => m.contract_month && new Date(m.contract_month).getFullYear() === today.getFullYear());
-  const ytdProjected = yearProfit.reduce((s,m) => s + (+m.projected_profit || 0), 0);
-  const monthlyAvg = profit.length ? profit.slice(0,12).reduce((s,m) => s + (+m.projected_profit || 0), 0) / Math.min(profit.length, 12) : null;
 
-  document.getElementById('profit-headline').innerHTML = [
-    card('Last Month Contracted', fmt$(lastMonth.projected_profit), `${fmtN(lastMonth.deals_contracted)} deals · ${lastMonth.contract_month ? new Date(lastMonth.contract_month).toLocaleDateString('en-US',{month:'short',year:'numeric'}) : '—'}`, 'projected_profit_month', 'accent'),
-    card('This Month MTD', fmt$(thisMonth.projected_profit), `${fmtN(thisMonth.deals_contracted)} deals contracted`),
-    card('YTD Projected', fmt$(ytdProjected), `${today.getFullYear()} contracted profit`),
-    card('Monthly Avg (12mo)', fmt$(monthlyAvg), 'rolling average')
+  // ─── 4 buckets ───
+  const buckets = activeP.reduce((acc, d) => {
+    const b = d.profit_bucket || 'PROJECTED';
+    if (!acc[b]) acc[b] = { count: 0, total: 0 };
+    acc[b].count++;
+    acc[b].total += (+d.bucket_profit || 0);
+    return acc;
+  }, {});
+  // Terminated lifetime tracking from pipeline (not active filter — want all-time terminations)
+  const terminatedAll = pipeline.filter(d => d.profit_bucket === 'TERMINATED');
+
+  document.getElementById('profit-buckets').innerHTML = [
+    card({ label:'PROJECTED', value: fmt$(buckets.PROJECTED?.total||0), sub:`${buckets.PROJECTED?.count||0} deals · listing-based`, cls:'proj', clickHandler:`showDrillDown('PROJECTED')` }),
+    card({ label:'LOCKED', value: fmt$(buckets.LOCKED?.total||0), sub:`${buckets.LOCKED?.count||0} deals · buyer signed`, cls:'locked', clickHandler:`showDrillDown('LOCKED')` }),
+    card({ label:'REALIZED (Active Only)', value: fmt$(buckets.REALIZED?.total||0), sub:`${buckets.REALIZED?.count||0} deals · cash in`, cls:'realized', clickHandler:`showDrillDown('REALIZED_ACTIVE')` }),
+    card({ label:'TERMINATED (Lifetime)', value: fmtN(terminatedAll.length), sub:`tracking, doesn't count`, cls:'term', clickHandler:`showDrillDown('TERMINATED')` })
   ].join('');
 
-  // Closing timeline buckets
-  const week7 = addDays(today, 7);
-  const day30 = addDays(today, 30);
-  const day60 = addDays(today, 60);
-  const day90 = addDays(today, 90);
-  const sumProfitByCloseDate = (start, end) => myDeals
-    .filter(d => d.end_buyer_close_date && new Date(d.end_buyer_close_date) >= start && new Date(d.end_buyer_close_date) <= end)
-    .reduce((acc, d) => ({ count: (acc.count||0)+1, sum: (acc.sum||0)+(+d.projected_profit || 0) }), {});
-  const wk = sumProfitByCloseDate(today, week7);
-  const m30 = sumProfitByCloseDate(today, day30);
-  const m60 = sumProfitByCloseDate(today, day60);
-  const m90 = sumProfitByCloseDate(today, day90);
+  // ─── Realized profit YTD/MTD/lifetime ───
+  const yearStart = startOfYear(today);
+  const monthStart = startOfMonth(today);
+  const realizedAll = pipeline.filter(d => d.profit_bucket === 'REALIZED' && d.actual_close_date);
+  const realizedYTD = realizedAll.filter(d => new Date(d.actual_close_date) >= yearStart);
+  const realizedMTD = realizedAll.filter(d => new Date(d.actual_close_date) >= monthStart);
+  const realizedInRange = realizedAll.filter(d => inRange(d.actual_close_date, range.start, range.end));
 
-  document.getElementById('profit-timeline').innerHTML = [
-    card('This Week', fmt$(wk.sum||0), `${fmtN(wk.count||0)} deals closing`, '', 'accent'),
-    card('Next 30 Days', fmt$(m30.sum||0), `${fmtN(m30.count||0)} deals`),
-    card('Next 60 Days', fmt$(m60.sum||0), `${fmtN(m60.count||0)} deals`),
-    card('Next 90 Days', fmt$(m90.sum||0), `${fmtN(m90.count||0)} deals`)
+  document.getElementById('profit-realized').innerHTML = [
+    card({ label:'Realized — Period', value: fmt$(realizedInRange.reduce((s,d)=>s+(+d.bucket_profit||0),0)), sub:`${realizedInRange.length} deals`, cls:'realized' }),
+    card({ label:'Realized YTD', value: fmt$(realizedYTD.reduce((s,d)=>s+(+d.bucket_profit||0),0)), sub:`${realizedYTD.length} deals · ${today.getFullYear()}`, cls:'accent' }),
+    card({ label:'Realized MTD', value: fmt$(realizedMTD.reduce((s,d)=>s+(+d.bucket_profit||0),0)), sub:`${realizedMTD.length} deals · ${today.toLocaleString('en-US',{month:'long'})}` }),
+    card({ label:'Realized Lifetime', value: fmt$(realizedAll.reduce((s,d)=>s+(+d.bucket_profit||0),0)), sub:`${realizedAll.length} deals total` })
   ].join('');
 
-  // Monthly profit chart
-  const profitTrend = profit.slice(0, 12).reverse();
-  chart('c-monthly-profit', 'bar', {
-    labels: profitTrend.map(m => m.contract_month ? new Date(m.contract_month).toLocaleDateString('en-US',{month:'short'}) : ''),
-    datasets: [{ label:'Projected Profit', data:profitTrend.map(m=>+m.projected_profit||0), backgroundColor:'#10b981' }]
-  });
+  // ─── Closing timelines ───
+  const buckets30 = (filterFn, getDate) => {
+    const r7 = addDays(today, 7);
+    const r30 = addDays(today, 30);
+    const r60 = addDays(today, 60);
+    const r90 = addDays(today, 90);
+    const between = (s, e) => activeP.filter(d => filterFn(d) && getDate(d) && new Date(getDate(d)) >= s && new Date(getDate(d)) <= e);
+    return {
+      week: between(today, r7),
+      m30: between(today, r30),
+      m60: between(today, r60),
+      m90: between(today, r90)
+    };
+  };
+  const buyTime = buckets30(d => d.acquisition_status !== 'Closed' && d.acquisition_status !== 'Terminated', d => d.close_date);
+  document.getElementById('profit-buy-timeline').innerHTML = [
+    card({ label:'7 Days', value: fmtN(buyTime.week.length), sub: fmt$(buyTime.week.reduce((s,d)=>s+(+d.purchase_price||0),0)) }),
+    card({ label:'30 Days', value: fmtN(buyTime.m30.length), sub: fmt$(buyTime.m30.reduce((s,d)=>s+(+d.purchase_price||0),0)) }),
+    card({ label:'60 Days', value: fmtN(buyTime.m60.length), sub: fmt$(buyTime.m60.reduce((s,d)=>s+(+d.purchase_price||0),0)) }),
+    card({ label:'90 Days', value: fmtN(buyTime.m90.length), sub: fmt$(buyTime.m90.reduce((s,d)=>s+(+d.purchase_price||0),0)) })
+  ].join('');
+  const sellTime = buckets30(d => d.end_buyer_status && d.end_buyer_status !== 'Sold', d => d.end_buyer_close_date);
+  document.getElementById('profit-sell-timeline').innerHTML = [
+    card({ label:'7 Days', value: fmtN(sellTime.week.length), sub: fmt$(sellTime.week.reduce((s,d)=>s+(+d.bucket_profit||0),0)) + ' profit' }),
+    card({ label:'30 Days', value: fmtN(sellTime.m30.length), sub: fmt$(sellTime.m30.reduce((s,d)=>s+(+d.bucket_profit||0),0)) + ' profit' }),
+    card({ label:'60 Days', value: fmtN(sellTime.m60.length), sub: fmt$(sellTime.m60.reduce((s,d)=>s+(+d.bucket_profit||0),0)) + ' profit' }),
+    card({ label:'90 Days', value: fmtN(sellTime.m90.length), sub: fmt$(sellTime.m90.reduce((s,d)=>s+(+d.bucket_profit||0),0)) + ' profit' })
+  ].join('');
 
-  // Deals contracted vs terminated chart
-  chart('c-monthly-flow', 'bar', {
-    labels: profitTrend.map(m => m.contract_month ? new Date(m.contract_month).toLocaleDateString('en-US',{month:'short'}) : ''),
+  // ─── Monthly profit chart (stacked: projected/locked/realized by contract month) ───
+  const monthly = (state.data.monthly || []).slice(0, 12).reverse();
+  makeChart('c-profit-monthly', 'bar', {
+    labels: monthly.map(m => fmtMonth(m.month)),
     datasets: [
-      { label:'Contracted', data:profitTrend.map(m=>+m.deals_contracted||0), backgroundColor:'#3b82f6' },
-      { label:'Terminated', data:profitTrend.map(m=>+m.terminated||0), backgroundColor:'#ef4444' }
+      { label:'Projected (contracts in month)', data: monthly.map(m => +m.projected_profit||0), backgroundColor:'#fde047' },
+      { label:'Realized (closes in month)', data: monthly.map(m => +m.realized_profit||0), backgroundColor:'#10b981' }
     ]
+  }, {
+    scales: {
+      x: { stacked: false, grid:{display:false}, ticks:{font:{size:10}}},
+      y: { grid:{color:'#f3f4f6'}, ticks:{font:{size:10}, callback: v => '$' + (v/1000).toFixed(0) + 'k'}}
+    }
   });
 
-  // Recent closes (from v_closed_deals_summary if available, else from my deals with actual_close_date)
-  const closes = (state.data.monthlyCloses || []).slice(0, 12);
-  const closesRows = closes.map(c => `<tr>
-    <td><b>${c.close_month ? new Date(c.close_month).toLocaleDateString('en-US',{month:'long',year:'numeric'}) : '—'}</b></td>
-    <td class="num">${fmtN(c.deals_closed)}</td>
-    <td class="num">${fmt$(c.total_revenue)}</td>
-    <td class="num">${fmt$(c.total_cost)}</td>
-    <td class="num"><b>${fmt$(c.total_gross_profit)}</b></td>
-    <td class="num">${fmt$(c.total_net)}</td>
-    <td class="num">${fmtN(c.avg_days_to_close)}d</td>
-    <td class="num">${fmtN(c.avg_days_on_market)}d</td>
+  // ─── Per-deal profit chart ───
+  const closedDeals = realizedAll.slice().sort((a,b) => new Date(b.actual_close_date) - new Date(a.actual_close_date)).slice(0, 30).reverse();
+  makeChart('c-profit-per-deal', 'bar', {
+    labels: closedDeals.map(d => `${(d.deal_name||'—').substring(0,28)}\n${fmtDate(d.actual_close_date)}`),
+    datasets: [{
+      label:'Realized Profit',
+      data: closedDeals.map(d => +d.bucket_profit || 0),
+      backgroundColor: closedDeals.map(d => +d.bucket_profit > 0 ? '#10b981' : '#ef4444')
+    }]
+  }, {
+    plugins: { legend: { display: false }},
+    scales: {
+      x: { grid:{display:false}, ticks:{font:{size:9}, autoSkip: false, maxRotation: 60, minRotation: 45}},
+      y: { grid:{color:'#f3f4f6'}, ticks:{font:{size:10}, callback: v => '$' + (v/1000).toFixed(0) + 'k'}}
+    }
+  });
+
+  // ─── Recently closed table (filtered to period) ───
+  const closedRows = realizedInRange.slice().sort((a,b) => new Date(b.actual_close_date) - new Date(a.actual_close_date)).map(d => `<tr>
+    <td><b>${d.deal_name||'—'}</b><div class="meta">${d.county||''}, ${d.state||''} · ${fmt1(d.acreage)} ac</div></td>
+    <td>${fmtDate(d.actual_close_date)}</td>
+    <td class="num">${fmt$(d.purchase_price)}</td>
+    <td class="num">${fmt$(d.actual_sale_price || d.end_buyer_contract_price)}</td>
+    <td class="num">${fmt$(d.gross_profit)}</td>
+    <td class="num text-emerald"><b>${fmt$(d.bucket_profit)}</b></td>
+    <td class="num">${fmtN(d.days_held)}d</td>
+    <td class="num">${fmtN(d.days_on_market)}d</td>
   </tr>`).join('');
-  document.getElementById('recent-closes').innerHTML = `<table class="dt">
+  document.getElementById('profit-closed-table').innerHTML = `<table class="dt">
     <thead><tr>
-      <th>Month</th><th class="num">Closed</th>
-      <th class="num">Revenue</th><th class="num">Cost</th><th class="num">Gross Profit</th><th class="num">Net</th>
-      <th class="num">Avg DTC</th><th class="num">Avg DoM</th>
-    </tr></thead><tbody>${closesRows || '<tr><td colspan="8" style="text-align:center;color:#9ca3af;padding:24px">No closed deal summary available</td></tr>'}</tbody>
+      <th>Deal / Location</th><th>Closed</th>
+      <th class="num">Purchase</th><th class="num">Sale</th><th class="num">Gross Profit</th><th class="num">Realized</th>
+      <th class="num">Days Held</th><th class="num">DoM</th>
+    </tr></thead>
+    <tbody>${closedRows || `<tr><td colspan="8" style="text-align:center;color:#9ca3af;padding:24px">No closes in this period. Try a wider range.</td></tr>`}</tbody>
   </table>`;
 }
 
-// ===========================================
-// GROWTH
-// ===========================================
-function renderGrowth(){
-  const am = state.data.am || [];
-  const trend = am.slice(0, 16).reverse();
-  const labels = trend.map(w => fmtD(w.week_start));
+//=============================================================================
+// ACTIVITY TAB
+//=============================================================================
+function renderActivity(range) {
+  const quoDaily = (state.data.quoDaily || []).slice().sort((a,b) => new Date(a.date) - new Date(b.date));
+  // Filter by period
+  const inPeriod = quoDaily.filter(q => inRange(q.date, range.start, range.end));
 
-  // Funnel volume
-  chart('c-gr-funnel', 'line', {
+  const totals = inPeriod.reduce((acc, q) => ({
+    calls: (acc.calls||0) + (+q.total_calls||0),
+    outbound: (acc.outbound||0) + (+q.outbound_calls||0),
+    inbound: (acc.inbound||0) + (+q.inbound_calls||0),
+    talkSec: (acc.talkSec||0) + (+q.talk_time_seconds||0),
+    texts: (acc.texts||0) + (+q.texts_sent||0),
+    days: new Set((acc.days||[]).concat(q.date)).size > 0 ? [...new Set((acc.days||[]).concat(q.date))] : [q.date]
+  }), {});
+  const daysActive = inPeriod.filter(q => +q.total_calls > 0 || +q.texts_sent > 0).length;
+  const avgCalls = daysActive > 0 ? Math.round((totals.calls||0) / daysActive) : 0;
+
+  document.getElementById('activity-summary').innerHTML = [
+    card({ label:'Total Calls', value: fmtN(totals.calls), sub:`${totals.outbound||0} out · ${totals.inbound||0} in`, icon:'📞' }),
+    card({ label:'Talk Time', value: fmtHrs(totals.talkSec), sub:'cumulative', icon:'⏱️' }),
+    card({ label:'Texts Sent', value: fmtN(totals.texts), icon:'💬' }),
+    card({ label:'Avg Calls/Day Active', value: fmtN(avgCalls), sub:`${daysActive} active days` })
+  ].join('');
+
+  // ─── Daily charts (last 60 days) ───
+  const labels = quoDaily.map(q => fmtD(q.date));
+
+  makeChart('c-act-calls-daily', 'bar', {
     labels,
-    datasets: [
-      { label:'Leads', data:trend.map(w=>+w.new_leads||0), borderColor:'#94a3b8', backgroundColor:'#94a3b815', fill:true, tension:0.3 },
-      { label:'Qualified', data:trend.map(w=>+w.new_qualified||0), borderColor:'#3b82f6', backgroundColor:'#3b82f615', fill:true, tension:0.3 },
-      { label:'Offers', data:trend.map(w=>+w.offers_made||0), borderColor:'#f59e0b', backgroundColor:'#f59e0b15', fill:true, tension:0.3 },
-      { label:'Contracts', data:trend.map(w=>+w.new_contracts||0), borderColor:'#10b981', backgroundColor:'#10b98115', fill:true, tension:0.3 }
-    ]
+    datasets: [{
+      label:'Calls', data: quoDaily.map(q => +q.total_calls||0),
+      backgroundColor:'#3b82f6'
+    }]
   });
 
-  // Source mix evolution (stacked bar)
-  chart('c-gr-source', 'bar', {
+  makeChart('c-act-talk-daily', 'bar', {
     labels,
-    datasets: [
-      { label:'Cold Call', data:trend.map(w=>+w.contracts_cc||0), backgroundColor:'#3b82f6' },
-      { label:'SMS', data:trend.map(w=>+w.contracts_sms||0), backgroundColor:'#10b981' },
-      { label:'Direct Mail', data:trend.map(w=>+w.contracts_dm||0), backgroundColor:'#f59e0b' },
-      { label:'Inbound', data:trend.map(w=>+w.contracts_inbound||0), backgroundColor:'#a78bfa' }
-    ]
-  }, { scales:{ x:{ stacked:true, grid:{display:false}}, y:{ stacked:true, grid:{color:'#f3f4f6'}}}});
-
-  // Win rate trend
-  const winRates = trend.map(w => w.offers_made > 0 ? (+w.new_contracts / +w.offers_made * 100) : null);
-  chart('c-gr-winrate', 'line', {
-    labels,
-    datasets: [{ label:'Offer → Contract %', data:winRates, borderColor:'#10b981', backgroundColor:'#10b98120', fill:true, tension:0.3 }]
+    datasets: [{
+      label:'Talk Hrs', data: quoDaily.map(q => +(q.talk_time_seconds||0) / 3600),
+      backgroundColor:'#10b981'
+    }]
   });
 
-  // Call activity (Jonathan from v_quo_weekly)
-  const quoW = (state.data.quoW || []).filter(q => q.user_name === 'Jonathan').slice(0, 16).reverse();
-  chart('c-gr-calls', 'bar', {
-    labels: quoW.map(w => fmtD(w.week_start)),
-    datasets: [{ label:'Total Calls', data:quoW.map(w => +w.total_calls || 0), backgroundColor:'#3b82f6' }]
+  makeChart('c-act-texts-daily', 'bar', {
+    labels,
+    datasets: [{
+      label:'Texts Sent', data: quoDaily.map(q => +q.texts_sent||0),
+      backgroundColor:'#a78bfa'
+    }]
+  });
+
+  makeChart('c-act-direction', 'doughnut', {
+    labels: ['Outbound','Inbound','Missed'],
+    datasets: [{
+      data: [
+        inPeriod.reduce((s,q) => s + (+q.outbound_calls||0), 0),
+        inPeriod.reduce((s,q) => s + (+q.inbound_calls||0), 0),
+        inPeriod.reduce((s,q) => s + (+q.missed_calls||0), 0)
+      ],
+      backgroundColor:['#3b82f6','#10b981','#ef4444']
+    }]
   });
 }
 
-// ===========================================
-// EVENT WIRING + INIT
-// ===========================================
-function showTab(tabName){
+//=============================================================================
+// DRILL-DOWN MODAL
+//=============================================================================
+function showDrillDown(bucket) {
+  const pipeline = state.data.pipeline || [];
+  let title, deals;
+
+  if (bucket === 'PROJECTED' || bucket === 'LOCKED') {
+    deals = pipeline.filter(d => d.is_active && d.profit_bucket === bucket);
+    title = `${bucket} Deals (${deals.length})`;
+  } else if (bucket === 'REALIZED') {
+    deals = pipeline.filter(d => d.profit_bucket === 'REALIZED');
+    title = `Realized Lifetime — ${deals.length} sold`;
+  } else if (bucket === 'REALIZED_ACTIVE') {
+    deals = pipeline.filter(d => d.is_active && d.profit_bucket === 'REALIZED');
+    title = `Realized (Active flag still on) — ${deals.length}`;
+  } else if (bucket === 'TERMINATED') {
+    deals = pipeline.filter(d => d.profit_bucket === 'TERMINATED');
+    title = `Terminated Lifetime — ${deals.length}`;
+  } else {
+    return;
+  }
+
+  deals = deals.slice().sort((a,b) => (+b.bucket_profit||0) - (+a.bucket_profit||0));
+  const total = deals.reduce((s,d) => s + (+d.bucket_profit||0), 0);
+
+  document.getElementById('drill-title').textContent = `${title} · Total: ${fmt$(total)}`;
+  document.getElementById('drill-body').innerHTML = `<table class="dt">
+    <thead><tr>
+      <th>Deal / Location</th>
+      <th>Phase</th>
+      <th>Strategy</th>
+      <th class="num">Purchase</th>
+      <th class="num">List/Buyer</th>
+      <th class="num">Profit</th>
+      <th>Contract Date</th>
+      <th>${bucket === 'REALIZED' || bucket === 'REALIZED_ACTIVE' ? 'Closed' : 'Close Date'}</th>
+    </tr></thead>
+    <tbody>${deals.map(d => `<tr>
+      <td><b>${d.deal_name||'—'}</b><div class="meta">${d.county||''}, ${d.state||''} · ${fmt1(d.acreage)} ac</div></td>
+      <td><span class="pill-phase">${d.deal_phase||'—'}</span></td>
+      <td>${d.closing_type ? `<span class="${strategyClass(d.closing_type)}">${d.closing_type}</span>` : '—'}</td>
+      <td class="num">${fmt$(d.purchase_price)}</td>
+      <td class="num">${fmt$(d.end_buyer_contract_price || d.listing_price)}</td>
+      <td class="num text-emerald"><b>${fmt$(d.bucket_profit)}</b></td>
+      <td>${fmtDate(d.contract_date)}</td>
+      <td>${fmtDate(d.actual_close_date || d.end_buyer_close_date || d.close_date)}</td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+  document.getElementById('drill-modal').classList.add('show');
+}
+
+function showDealDetail(airtableId) {
+  const d = (state.data.pipeline || []).find(x => x.airtable_record_id === airtableId);
+  if (!d) return;
+  document.getElementById('drill-title').textContent = d.deal_name || 'Deal Detail';
+  document.getElementById('drill-body').innerHTML = `
+    <div class="grid grid-3" style="margin-bottom:16px">
+      <div class="card"><div class="kpi-label">Phase</div><div class="kpi-value" style="font-size:16px">${d.deal_phase||'—'}</div></div>
+      <div class="card"><div class="kpi-label">Bucket</div><div class="kpi-value" style="font-size:16px"><span class="pill-bucket-${d.profit_bucket}">${d.profit_bucket||'—'}</span></div></div>
+      <div class="card"><div class="kpi-label">Profit</div><div class="kpi-value text-emerald">${fmt$(d.bucket_profit)}</div></div>
+    </div>
+    <h4 style="margin-bottom:8px;font-size:13px;font-weight:600">Property</h4>
+    <table class="dt" style="margin-bottom:16px">
+      <tbody>
+        <tr><td><b>Location</b></td><td>${d.county||''}, ${d.state||''}</td></tr>
+        <tr><td><b>Acreage</b></td><td>${fmt1(d.acreage)} ac</td></tr>
+        <tr><td><b>Address</b></td><td>${d.address||'—'}</td></tr>
+        <tr><td><b>Strategy</b></td><td>${d.closing_type||'—'}</td></tr>
+        <tr><td><b>Lead Source</b></td><td>${d.lead_source||'—'}</td></tr>
+      </tbody>
+    </table>
+    <h4 style="margin-bottom:8px;font-size:13px;font-weight:600">Financials</h4>
+    <table class="dt" style="margin-bottom:16px">
+      <tbody>
+        <tr><td><b>Purchase Price</b></td><td class="num">${fmt$(d.purchase_price)}</td></tr>
+        <tr><td><b>EMD</b></td><td class="num">${fmt$(d.emd_amount)} ${d.emd_deposited?'(deposited)':'(not deposited)'}</td></tr>
+        <tr><td><b>Listing Price</b></td><td class="num">${fmt$(d.listing_price)}</td></tr>
+        <tr><td><b>End Buyer Contract</b></td><td class="num">${fmt$(d.end_buyer_contract_price)}</td></tr>
+        <tr><td><b>Actual Sale Price</b></td><td class="num">${fmt$(d.actual_sale_price)}</td></tr>
+        <tr><td><b>Bucket Profit</b></td><td class="num text-emerald"><b>${fmt$(d.bucket_profit)}</b></td></tr>
+        <tr><td><b>Quick Estimate</b></td><td class="num">${fmt$(d.quick_profit_estimate)}</td></tr>
+      </tbody>
+    </table>
+    <h4 style="margin-bottom:8px;font-size:13px;font-weight:600">Timeline</h4>
+    <table class="dt">
+      <tbody>
+        <tr><td><b>Contract Date</b></td><td>${fmtDate(d.contract_date)}</td></tr>
+        <tr><td><b>DD Deadline</b></td><td>${fmtDate(d.dd_deadline)}</td></tr>
+        <tr><td><b>Close Date (Buy)</b></td><td>${fmtDate(d.close_date)}</td></tr>
+        <tr><td><b>Date Listed</b></td><td>${fmtDate(d.date_listed)}</td></tr>
+        <tr><td><b>End Buyer UC</b></td><td>${fmtDate(d.end_buyer_uc_date)}</td></tr>
+        <tr><td><b>End Buyer Close</b></td><td>${fmtDate(d.end_buyer_close_date)}</td></tr>
+        <tr><td><b>Actual Close</b></td><td>${fmtDate(d.actual_close_date)}</td></tr>
+        <tr><td><b>Days UC</b></td><td>${fmtN(d.days_under_contract)}</td></tr>
+      </tbody>
+    </table>
+    ${d.listing_url ? `<div style="margin-top:16px"><a class="btn-primary" style="display:inline-block;text-decoration:none;color:white" href="${d.listing_url}" target="_blank">View Listing ↗</a></div>` : ''}
+  `;
+  document.getElementById('drill-modal').classList.add('show');
+}
+
+function closeDrillDown() {
+  document.getElementById('drill-modal').classList.remove('show');
+}
+
+//=============================================================================
+// EVENTS
+//=============================================================================
+function showTab(tabName) {
   state.tab = tabName;
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tabName));
-  document.querySelectorAll('section[data-section]').forEach(s => s.hidden = (s.dataset.section !== tabName));
+  document.querySelectorAll('section[data-section]').forEach(s => {
+    s.hidden = (s.dataset.section !== tabName);
+  });
 }
 
-function setFilter(f){
-  state.filter = f;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === f));
-  renderAll();
+function setPeriod(p) {
+  state.period = p;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.period === p));
+  document.getElementById('custom-range').classList.toggle('show', p === 'custom');
+  if (p !== 'custom') {
+    renderAll();
+  } else if (state.customStart && state.customEnd) {
+    renderAll();
+  } else {
+    document.getElementById('period-display').textContent = 'Pick start + end dates →';
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Tab listeners
+  // Tabs
   document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
-  // Period filter listeners
-  document.querySelectorAll('.filter-btn').forEach(b => b.addEventListener('click', () => setFilter(b.dataset.filter)));
+  // Period
+  document.querySelectorAll('.filter-btn').forEach(b => b.addEventListener('click', () => setPeriod(b.dataset.period)));
+  // Custom dates
+  document.getElementById('custom-start').addEventListener('change', e => {
+    state.customStart = e.target.value;
+    if (state.period === 'custom' && state.customStart && state.customEnd) renderAll();
+  });
+  document.getElementById('custom-end').addEventListener('change', e => {
+    state.customEnd = e.target.value;
+    if (state.period === 'custom' && state.customStart && state.customEnd) renderAll();
+  });
   // AM filter
   document.getElementById('am-filter').addEventListener('change', e => {
     state.amFilter = e.target.value;
-    renderAll();
+    loadAll();
   });
   // Refresh
   document.getElementById('refresh-btn').addEventListener('click', loadAll);
@@ -955,13 +1242,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (state.autoTimer) clearInterval(state.autoTimer);
     if (e.target.checked) state.autoTimer = setInterval(loadAll, CONFIG.AUTO_REFRESH_MINUTES * 60 * 1000);
   });
-  // "Show unassigned" shortcut
-  document.getElementById('show-unassigned').addEventListener('click', () => {
-    document.getElementById('am-filter').value = 'Unassigned';
-    state.amFilter = 'Unassigned';
-    renderAll();
+  // Drill-down close
+  document.getElementById('drill-close').addEventListener('click', closeDrillDown);
+  document.getElementById('drill-modal').addEventListener('click', e => {
+    if (e.target.id === 'drill-modal') closeDrillDown();
   });
-  // Initial load + auto-refresh
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeDrillDown();
+  });
+
+  // Initial load
   loadAll();
   state.autoTimer = setInterval(loadAll, CONFIG.AUTO_REFRESH_MINUTES * 60 * 1000);
 });
