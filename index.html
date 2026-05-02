@@ -179,13 +179,13 @@
 
     <!-- ─── PULSE ─── -->
     <section data-section="pulse">
-      <h2 class="sec-h">Hit / Miss vs Goals (This Week) <span class="sec-help">click any card to see deals</span></h2>
+      <h2 class="sec-h">Goals — Selected Period <span class="sec-help">click any card to see deals · changes with period filter</span></h2>
       <div id="pulse-goals" class="grid grid-4"></div>
 
-      <h2 class="sec-h spaced">My Pipeline Snapshot <span class="sec-help">click any bucket to see deals</span></h2>
+      <h2 class="sec-h spaced">My Pipeline Snapshot <span class="sec-help">always current state · click any bucket to see deals</span></h2>
       <div id="pulse-snapshot" class="grid grid-4"></div>
 
-      <h2 class="sec-h spaced">This Week So Far</h2>
+      <h2 class="sec-h spaced">Activity — Selected Period <span class="sec-help">aggregated across weeks in period</span></h2>
       <div id="pulse-week" class="grid grid-4"></div>
 
       <h2 class="sec-h spaced">My Active Deals <span class="sec-help">click any row for full deal detail</span></h2>
@@ -193,7 +193,7 @@
         <div class="scroll-wrap"><div id="pulse-active-deals"></div></div>
       </div>
 
-      <h2 class="sec-h spaced">Today's Hot List</h2>
+      <h2 class="sec-h spaced">Today's Hot List <span class="sec-help">always next 7 days from today</span></h2>
       <div class="grid grid-4">
         <div class="card lg">
           <h3 class="kpi-label" style="margin-bottom:10px">🔥 Closing This Week (Buy)</h3>
@@ -307,7 +307,12 @@
       <h2 class="sec-h">Activity Summary (Period)</h2>
       <div id="activity-summary" class="grid grid-4"></div>
 
-      <h2 class="sec-h spaced">Daily Activity (Last 60 Days)</h2>
+      <h2 class="sec-h spaced">Daily Activity Table (In Period)</h2>
+      <div class="card">
+        <div class="scroll-wrap"><div id="activity-table"></div></div>
+      </div>
+
+      <h2 class="sec-h spaced">Daily Activity Charts (Last 60 Days)</h2>
       <div class="grid grid-2">
         <div class="card lg"><h3 class="card-t">Calls per Day</h3><canvas id="c-act-calls-daily" height="160"></canvas></div>
         <div class="card lg"><h3 class="card-t">Talk Time per Day</h3><canvas id="c-act-talk-daily" height="160"></canvas></div>
@@ -570,48 +575,66 @@ function renderAll() {
 function renderPulse(range) {
   const today = new Date(); today.setHours(0,0,0,0);
   const monday = getMonday(today);
-  const mondayStr = ymd(monday);
   const sevenDaysOut = addDays(today, 7);
   const sixtyDaysAgo = addDays(today, -60);
+  const startStr = ymd(range.start);
+  const endStr = ymd(range.end);
 
   const pipeline = state.data.pipeline || [];
   const activeP = pipeline.filter(d => d.is_active);
 
-  // Find this week's row by STRING comparison (avoid timezone bug)
-  const thisWeekRow = (state.data.weekly || []).find(w => w.week_start === mondayStr) || {};
+  // ─── Aggregate weekly ledger across the selected period ───
+  const allWeekly = state.data.weekly || [];
+  const inPeriod = allWeekly.filter(w => w.week_start >= startStr && w.week_start <= endStr);
+  const periodTotals = inPeriod.reduce((a, w) => ({
+    contracts: (a.contracts||0) + (+w.new_contracts||0),
+    offers: (a.offers||0) + (+w.offers_made||0),
+    terminated: (a.terminated||0) + (+w.terminated||0),
+    closed: (a.closed||0) + (+w.deals_closed||0),
+    realized: (a.realized||0) + (+w.realized_profit||0),
+    calls: (a.calls||0) + (+w.total_calls||0),
+    talkHrs: (a.talkHrs||0) + (+w.talk_time_hours||0),
+    texts: (a.texts||0) + (+w.texts_sent||0),
+    leads: (a.leads||0) + (+w.new_leads||0),
+    qualified: (a.qualified||0) + (+w.new_qualified||0)
+  }), {});
+  const weeksInPeriod = inPeriod.length || 1;
+  // Pro-rate goals: 4 contracts/wk × N weeks, 20 offers/wk × N weeks
+  const goalContracts = 4 * weeksInPeriod;
+  const goalOffers = 20 * weeksInPeriod;
+  const isSingleWeek = weeksInPeriod === 1;
 
   // ─── Goals (top) ───
-  const sundayStr = ymd(addDays(monday, 6));
   document.getElementById('pulse-goals').innerHTML = [
     card({
       label:'New Contracts',
-      value: fmtN(thisWeekRow.new_contracts),
-      sub:'goal: 4/wk',
-      threshKpi:'deals_under_contract',
+      value: fmtN(periodTotals.contracts),
+      sub: isSingleWeek ? 'goal: 4/wk' : `goal: ${goalContracts} (${weeksInPeriod} wks × 4)`,
+      threshKpi: isSingleWeek ? 'deals_under_contract' : '',
       icon:'✍️',
-      clickHandler:`showContractsDrill('${mondayStr}','${sundayStr}','This Week')`
+      clickHandler:`showContractsDrill('${startStr}','${endStr}','Contracts in Period')`
     }),
     card({
       label:'Offers Made (Team)',
-      value: fmtN(thisWeekRow.offers_made),
-      sub:'goal: 20/wk',
-      threshKpi:'offers_made',
+      value: fmtN(periodTotals.offers),
+      sub: isSingleWeek ? 'goal: 20/wk' : `goal: ${goalOffers} (${weeksInPeriod} wks × 20)`,
+      threshKpi: isSingleWeek ? 'offers_made' : '',
       icon:'🎯',
-      clickHandler:`showFunnelEventsDrill('offer','${mondayStr}','${sundayStr}','Offers Made This Week')`
+      clickHandler:`showFunnelEventsDrill('offer','${startStr}','${endStr}','Offers Made in Period')`
     }),
     card({
       label:'Terminated',
-      value: fmtN(thisWeekRow.terminated),
+      value: fmtN(periodTotals.terminated),
       sub:'tracking only · does not count vs goal',
-      cls: thisWeekRow.terminated > 0 ? 'term' : '',
-      clickHandler:`showTerminatedDrill('${mondayStr}','${sundayStr}','Terminated This Week')`
+      cls: periodTotals.terminated > 0 ? 'term' : '',
+      clickHandler:`showTerminatedDrill('${startStr}','${endStr}','Terminated in Period')`
     }),
     card({
       label:'Realized $ (Closed)',
-      value: fmt$(thisWeekRow.realized_profit),
-      sub:`${fmtN(thisWeekRow.deals_closed||0)} deals closed`,
+      value: fmt$(periodTotals.realized),
+      sub:`${fmtN(periodTotals.closed||0)} deals closed`,
       cls:'realized',
-      clickHandler:`showClosedDrill('${mondayStr}','${sundayStr}','Closed This Week')`
+      clickHandler:`showClosedDrill('${startStr}','${endStr}','Closed in Period')`
     })
   ].join('');
 
@@ -666,32 +689,32 @@ function renderPulse(range) {
     })
   ].join('');
 
-  // ─── This Week So Far ───
+  // ─── Activity in Period ───
   document.getElementById('pulse-week').innerHTML = [
     card({
       label:'Calls',
-      value: fmtN(thisWeekRow.total_calls),
-      sub: `${fmt1(thisWeekRow.talk_time_hours||0)} hrs talk`,
+      value: fmtN(periodTotals.calls),
+      sub: `${fmt1(periodTotals.talkHrs||0)} hrs talk`,
       icon:'📞',
-      clickHandler:`showCallsDrill('${mondayStr}','${sundayStr}','Call Activity This Week')`
+      clickHandler:`showCallsDrill('${startStr}','${endStr}','Call Activity in Period')`
     }),
     card({
       label:'Texts Sent',
-      value: fmtN(thisWeekRow.texts_sent),
+      value: fmtN(periodTotals.texts),
       icon:'💬',
-      clickHandler:`showCallsDrill('${mondayStr}','${sundayStr}','Activity This Week')`
+      clickHandler:`showCallsDrill('${startStr}','${endStr}','Activity in Period')`
     }),
     card({
       label:'Leads (Team)',
-      value: fmtN(thisWeekRow.new_leads),
+      value: fmtN(periodTotals.leads),
       sub:'company-wide funnel',
-      clickHandler:`showFunnelEventsDrill('lead','${mondayStr}','${sundayStr}','Leads This Week')`
+      clickHandler:`showFunnelEventsDrill('lead','${startStr}','${endStr}','Leads in Period')`
     }),
     card({
       label:'Qualified (Team)',
-      value: fmtN(thisWeekRow.new_qualified),
+      value: fmtN(periodTotals.qualified),
       sub:'moved to AM queue',
-      clickHandler:`showFunnelEventsDrill('qualified','${mondayStr}','${sundayStr}','Qualified This Week')`
+      clickHandler:`showFunnelEventsDrill('qualified','${startStr}','${endStr}','Qualified in Period')`
     })
   ].join('');
 
@@ -820,6 +843,10 @@ function renderPerformance(range) {
   const rows = inPeriod.map(w => {
     const goalPill = pill('deals_under_contract', w.new_contracts);
     const wEnd = ymd(addDays(parseLocalDate(w.week_start), 6));
+    // Ratios — formatted as "Nx" (lower = more efficient). Show "—" when denominator is 0.
+    const lq = w.new_qualified > 0 ? (+w.new_leads / +w.new_qualified).toFixed(1) + 'x' : '—';
+    const qo = w.offers_made > 0 ? (+w.new_qualified / +w.offers_made).toFixed(1) + 'x' : '—';
+    const oc = w.new_contracts > 0 ? (+w.offers_made / +w.new_contracts).toFixed(1) + 'x' : '—';
     return `<tr>
       <td><b>${fmtD(w.week_start)}</b></td>
       <td class="num"><a href="#" onclick="showCallsDrill('${w.week_start}','${wEnd}','Calls — Week of ${fmtD(w.week_start)}');return false;">${fmtN(w.total_calls)}</a></td>
@@ -827,8 +854,11 @@ function renderPerformance(range) {
       <td class="num">${fmtN(w.texts_sent)}</td>
       <td class="num"><a href="#" onclick="showFunnelEventsDrill('lead','${w.week_start}','${wEnd}','Leads — Week of ${fmtD(w.week_start)}');return false;">${fmtN(w.new_leads)}</a></td>
       <td class="num"><a href="#" onclick="showFunnelEventsDrill('qualified','${w.week_start}','${wEnd}','Qualified — Week of ${fmtD(w.week_start)}');return false;">${fmtN(w.new_qualified)}</a></td>
+      <td class="num text-muted" title="Leads per Qualified — lower is better">${lq}</td>
       <td class="num"><a href="#" onclick="showFunnelEventsDrill('offer','${w.week_start}','${wEnd}','Offers — Week of ${fmtD(w.week_start)}');return false;">${fmtN(w.offers_made)}</a></td>
+      <td class="num text-muted" title="Qualified per Offer — lower is better">${qo}</td>
       <td class="num"><b><a href="#" onclick="showContractsDrill('${w.week_start}','${wEnd}','Contracts — Week of ${fmtD(w.week_start)}');return false;">${fmtN(w.new_contracts)}</a></b>${goalPill}</td>
+      <td class="num text-muted" title="Offers per Contract — lower is better">${oc}</td>
       <td class="num">${w.terminated > 0 ? `<a href="#" onclick="showTerminatedDrill('${w.week_start}','${wEnd}','Terminated — Week of ${fmtD(w.week_start)}');return false;" class="text-rose">${fmtN(w.terminated)}</a>` : '0'}</td>
       <td class="num">${w.deals_closed > 0 ? `<a href="#" onclick="showClosedDrill('${w.week_start}','${wEnd}','Closed — Week of ${fmtD(w.week_start)}');return false;">${fmtN(w.deals_closed)}</a>` : '0'}</td>
       <td class="num text-emerald">${fmt$(w.realized_profit)}</td>
@@ -843,14 +873,17 @@ function renderPerformance(range) {
       <th class="num">Texts</th>
       <th class="num">Leads</th>
       <th class="num">Qual</th>
+      <th class="num" title="Leads per Qualified — lower = better">L→Q</th>
       <th class="num">Offers</th>
+      <th class="num" title="Qualified per Offer — lower = better">Q→O</th>
       <th class="num">Contracts</th>
+      <th class="num" title="Offers per Contract — lower = better">O→C</th>
       <th class="num">Term'd</th>
       <th class="num">Closed</th>
       <th class="num">Realized</th>
       <th class="num">Talk/Contract</th>
     </tr></thead>
-    <tbody>${rows || `<tr><td colspan="12" style="text-align:center;color:#9ca3af;padding:24px">No weeks in this period</td></tr>`}</tbody>
+    <tbody>${rows || `<tr><td colspan="15" style="text-align:center;color:#9ca3af;padding:24px">No weeks in this period</td></tr>`}</tbody>
   </table>`;
 
   // ─── Conversion funnel (period aggregate) ───
@@ -1051,6 +1084,10 @@ function renderProfit(range) {
   }
 
   // ─── 4 buckets ───
+  // PROJECTED + LOCKED come from active deals (still being worked).
+  // REALIZED + TERMINATED are lifetime tallies — they represent finished outcomes.
+  // (Note: the trigger flips is_active=false the moment a deal is sold, so
+  // "Realized AND Active" is by-design always 0 — that's why we show lifetime here.)
   const buckets = activeP.reduce((acc, d) => {
     const b = d.profit_bucket || 'PROJECTED';
     if (!acc[b]) acc[b] = { count: 0, total: 0 };
@@ -1058,34 +1095,36 @@ function renderProfit(range) {
     acc[b].total += (+d.bucket_profit || 0);
     return acc;
   }, {});
+  const realizedLifetime = pipeline.filter(d => d.profit_bucket === 'REALIZED');
+  const realizedLifetimeTotal = realizedLifetime.reduce((s,d) => s + (+d.bucket_profit || 0), 0);
   const terminatedAll = pipeline.filter(d => d.profit_bucket === 'TERMINATED');
 
   document.getElementById('profit-buckets').innerHTML = [
     card({
-      label:'PROJECTED',
+      label:'PROJECTED (Active)',
       value: fmt$(buckets.PROJECTED?.total||0),
       sub:`${buckets.PROJECTED?.count||0} deals · listing-based`,
       cls:'proj',
       clickHandler:`showBucketDrill('PROJECTED')`
     }),
     card({
-      label:'LOCKED',
+      label:'LOCKED (Active)',
       value: fmt$(buckets.LOCKED?.total||0),
       sub:`${buckets.LOCKED?.count||0} deals · buyer signed`,
       cls:'locked',
       clickHandler:`showBucketDrill('LOCKED')`
     }),
     card({
-      label:'REALIZED (Active)',
-      value: fmt$(buckets.REALIZED?.total||0),
-      sub:`${buckets.REALIZED?.count||0} deals · cash in`,
+      label:'REALIZED (Lifetime)',
+      value: fmt$(realizedLifetimeTotal),
+      sub:`${realizedLifetime.length} deals sold · cash in`,
       cls:'realized',
-      clickHandler:`showBucketDrill('REALIZED_ACTIVE')`
+      clickHandler:`showAllRealizedDrill()`
     }),
     card({
       label:'TERMINATED (Lifetime)',
       value: fmtN(terminatedAll.length),
-      sub:`tracking only · doesn't count`,
+      sub:`tracking only · does not count`,
       cls:'term',
       clickHandler:`showBucketDrill('TERMINATED')`
     })
@@ -1133,33 +1172,56 @@ function renderProfit(range) {
   ].join('');
 
   // ─── Closing timelines (clickable) ───
-  const buyTimeFn = (start, end) => activeP.filter(d => 
-    d.acquisition_status !== 'Closed' && d.acquisition_status !== 'Terminated' &&
-    d.close_date && inRangeLocal(d.close_date, start, end)
+  // BUY-side: deals where WE close on the purchase
+  const buyActive = activeP.filter(d =>
+    d.acquisition_status !== 'Closed' && d.acquisition_status !== 'Terminated'
   );
-  const sellTimeFn = (start, end) => activeP.filter(d =>
-    d.end_buyer_status && d.end_buyer_status !== 'Sold' &&
-    d.end_buyer_close_date && inRangeLocal(d.end_buyer_close_date, start, end)
-  );
-  const buyWk = buyTimeFn(today, addDays(today,7));
-  const buy30 = buyTimeFn(today, addDays(today,30));
-  const buy60 = buyTimeFn(today, addDays(today,60));
-  const buy90 = buyTimeFn(today, addDays(today,90));
+  const buyOverdue = buyActive.filter(d => d.close_date && parseLocalDate(d.close_date) < today);
+  const buyWk = buyActive.filter(d => d.close_date && inRangeLocal(d.close_date, today, addDays(today,7)));
+  const buy30 = buyActive.filter(d => d.close_date && inRangeLocal(d.close_date, today, addDays(today,30)));
+  const buyMissing = buyActive.filter(d => !d.close_date && d.acquisition_status !== 'Under Contract');
   document.getElementById('profit-buy-timeline').innerHTML = [
-    card({ label:'7 Days', value: fmtN(buyWk.length), sub: fmt$(buyWk.reduce((s,d)=>s+(+d.purchase_price||0),0)), clickHandler:`showTimelineDrill('buy', 7)` }),
-    card({ label:'30 Days', value: fmtN(buy30.length), sub: fmt$(buy30.reduce((s,d)=>s+(+d.purchase_price||0),0)), clickHandler:`showTimelineDrill('buy', 30)` }),
-    card({ label:'60 Days', value: fmtN(buy60.length), sub: fmt$(buy60.reduce((s,d)=>s+(+d.purchase_price||0),0)), clickHandler:`showTimelineDrill('buy', 60)` }),
-    card({ label:'90 Days', value: fmtN(buy90.length), sub: fmt$(buy90.reduce((s,d)=>s+(+d.purchase_price||0),0)), clickHandler:`showTimelineDrill('buy', 90)` })
+    card({
+      label: buyOverdue.length > 0 ? '⚠️ Overdue' : 'Overdue',
+      value: fmtN(buyOverdue.length),
+      sub: fmt$(buyOverdue.reduce((s,d)=>s+(+d.purchase_price||0),0)),
+      cls: buyOverdue.length > 0 ? 'term' : '',
+      clickHandler:`showTimelineDrill('buy','overdue')`
+    }),
+    card({ label:'Next 7 Days', value: fmtN(buyWk.length), sub: fmt$(buyWk.reduce((s,d)=>s+(+d.purchase_price||0),0)), clickHandler:`showTimelineDrill('buy', 7)` }),
+    card({ label:'Next 30 Days', value: fmtN(buy30.length), sub: fmt$(buy30.reduce((s,d)=>s+(+d.purchase_price||0),0)), clickHandler:`showTimelineDrill('buy', 30)` }),
+    card({
+      label: buyMissing.length > 0 ? '⚠️ No Date Set' : 'No Date Set',
+      value: fmtN(buyMissing.length),
+      sub:'past Under Contract',
+      cls: buyMissing.length > 0 ? 'warn' : '',
+      clickHandler:`showTimelineDrill('buy','missing')`
+    })
   ].join('');
-  const sellWk = sellTimeFn(today, addDays(today,7));
-  const sell30 = sellTimeFn(today, addDays(today,30));
-  const sell60 = sellTimeFn(today, addDays(today,60));
-  const sell90 = sellTimeFn(today, addDays(today,90));
+
+  // SELL-side: deals where the END BUYER closes on us
+  const sellActive = activeP.filter(d => d.end_buyer_status && d.end_buyer_status !== 'Sold' && d.end_buyer_status !== 'No Buyer' && d.end_buyer_status !== 'Marketing');
+  const sellOverdue = sellActive.filter(d => d.end_buyer_close_date && parseLocalDate(d.end_buyer_close_date) < today);
+  const sellWk = sellActive.filter(d => d.end_buyer_close_date && inRangeLocal(d.end_buyer_close_date, today, addDays(today,7)));
+  const sell30 = sellActive.filter(d => d.end_buyer_close_date && inRangeLocal(d.end_buyer_close_date, today, addDays(today,30)));
+  const sellMissing = sellActive.filter(d => !d.end_buyer_close_date);
   document.getElementById('profit-sell-timeline').innerHTML = [
-    card({ label:'7 Days', value: fmtN(sellWk.length), sub: fmt$(sellWk.reduce((s,d)=>s+(+d.bucket_profit||0),0)) + ' profit', clickHandler:`showTimelineDrill('sell', 7)` }),
-    card({ label:'30 Days', value: fmtN(sell30.length), sub: fmt$(sell30.reduce((s,d)=>s+(+d.bucket_profit||0),0)) + ' profit', clickHandler:`showTimelineDrill('sell', 30)` }),
-    card({ label:'60 Days', value: fmtN(sell60.length), sub: fmt$(sell60.reduce((s,d)=>s+(+d.bucket_profit||0),0)) + ' profit', clickHandler:`showTimelineDrill('sell', 60)` }),
-    card({ label:'90 Days', value: fmtN(sell90.length), sub: fmt$(sell90.reduce((s,d)=>s+(+d.bucket_profit||0),0)) + ' profit', clickHandler:`showTimelineDrill('sell', 90)` })
+    card({
+      label: sellOverdue.length > 0 ? '⚠️ Overdue' : 'Overdue',
+      value: fmtN(sellOverdue.length),
+      sub: fmt$(sellOverdue.reduce((s,d)=>s+(+d.bucket_profit||0),0)) + ' profit',
+      cls: sellOverdue.length > 0 ? 'term' : '',
+      clickHandler:`showTimelineDrill('sell','overdue')`
+    }),
+    card({ label:'Next 7 Days', value: fmtN(sellWk.length), sub: fmt$(sellWk.reduce((s,d)=>s+(+d.bucket_profit||0),0)) + ' profit', clickHandler:`showTimelineDrill('sell', 7)` }),
+    card({ label:'Next 30 Days', value: fmtN(sell30.length), sub: fmt$(sell30.reduce((s,d)=>s+(+d.bucket_profit||0),0)) + ' profit', clickHandler:`showTimelineDrill('sell', 30)` }),
+    card({
+      label: sellMissing.length > 0 ? '⚠️ No Date Set' : 'No Date Set',
+      value: fmtN(sellMissing.length),
+      sub:'buyer locked, no close date',
+      cls: sellMissing.length > 0 ? 'warn' : '',
+      clickHandler:`showTimelineDrill('sell','missing')`
+    })
   ].join('');
 
   // ─── Monthly chart ───
@@ -1241,6 +1303,35 @@ function renderActivity(range) {
     card({ label:'Texts Sent', value: fmtN(totals.texts), icon:'💬' }),
     card({ label:'Avg Calls/Day Active', value: fmtN(avgCalls), sub:`${daysActive} active days` })
   ].join('');
+
+  // ─── Daily activity table (newest first) ───
+  const tableRows = inPeriod.slice().reverse().map(q => `<tr>
+    <td><b>${fmtDate(q.date)}</b></td>
+    <td><span class="meta" style="font-size:11px">${parseLocalDate(q.date).toLocaleDateString('en-US',{weekday:'short'})}</span></td>
+    <td class="num">${fmtN(q.total_calls)}</td>
+    <td class="num">${fmtN(q.outbound_calls)}</td>
+    <td class="num">${fmtN(q.inbound_calls)}</td>
+    <td class="num">${fmtN(q.missed_calls)}</td>
+    <td class="num">${fmt2((+q.talk_time_seconds||0)/3600)} hrs</td>
+    <td class="num">${fmtN(q.texts_sent)}</td>
+    <td class="num">${fmtN(q.texts_received)}</td>
+    <td class="num">${fmtN(q.voicemails_left)}</td>
+  </tr>`).join('');
+  document.getElementById('activity-table').innerHTML = `<table class="dt">
+    <thead><tr>
+      <th>Date</th>
+      <th>Day</th>
+      <th class="num">Total Calls</th>
+      <th class="num">Outbound</th>
+      <th class="num">Inbound</th>
+      <th class="num">Missed</th>
+      <th class="num">Talk Time</th>
+      <th class="num">Texts Sent</th>
+      <th class="num">Texts Recvd</th>
+      <th class="num">Voicemails</th>
+    </tr></thead>
+    <tbody>${tableRows || `<tr><td colspan="10" style="text-align:center;color:#9ca3af;padding:24px">No activity data in this period (Quo sync runs weekly — last sync: Apr 26)</td></tr>`}</tbody>
+  </table>`;
 
   const labels = quoDaily.map(q => fmtD(q.date));
   makeChart('c-act-calls-daily', 'bar', { labels, datasets: [{ label:'Calls', data: quoDaily.map(q => +q.total_calls||0), backgroundColor:'#3b82f6' }] });
@@ -1384,29 +1475,56 @@ function showStrategyDrill(strategy) {
 }
 
 // ─── Timeline drill-downs ───
-function showTimelineDrill(side, days) {
+function showTimelineDrill(side, mode) {
   const today = new Date(); today.setHours(0,0,0,0);
-  const end = addDays(today, days);
   const activeP = (state.data.pipeline || []).filter(d => d.is_active);
-  let deals;
+
   if (side === 'buy') {
-    deals = activeP.filter(d =>
-      d.acquisition_status !== 'Closed' && d.acquisition_status !== 'Terminated' &&
-      d.close_date && inRangeLocal(d.close_date, today, end)
-    ).sort((a,b) => parseLocalDate(a.close_date) - parseLocalDate(b.close_date));
-    const totalPurchase = deals.reduce((s,d) => s + (+d.purchase_price||0), 0);
-    openModal(`Buy-Side Closings (Next ${days} Days)`,
-      `<b>${deals.length}</b> deals · Total purchase value: <b>${fmt$(totalPurchase)}</b>`,
-      dealsTable(deals));
+    const buyActive = activeP.filter(d =>
+      d.acquisition_status !== 'Closed' && d.acquisition_status !== 'Terminated'
+    );
+    let deals, title, summary;
+    if (mode === 'overdue') {
+      deals = buyActive.filter(d => d.close_date && parseLocalDate(d.close_date) < today)
+        .sort((a,b) => parseLocalDate(a.close_date) - parseLocalDate(b.close_date));
+      title = 'Buy-Side: Overdue Closings';
+      summary = `<b>${deals.length}</b> deals where the buy-side close date has already passed. ${fmt$(deals.reduce((s,d)=>s+(+d.purchase_price||0),0))} in purchase value.`;
+    } else if (mode === 'missing') {
+      deals = buyActive.filter(d => !d.close_date && d.acquisition_status !== 'Under Contract');
+      title = 'Buy-Side: No Close Date Set';
+      summary = `<b>${deals.length}</b> deals past the Under Contract phase that should have a close date set in Airtable.`;
+    } else {
+      const days = mode;
+      const end = addDays(today, days);
+      deals = buyActive.filter(d => d.close_date && inRangeLocal(d.close_date, today, end))
+        .sort((a,b) => parseLocalDate(a.close_date) - parseLocalDate(b.close_date));
+      title = `Buy-Side Closings (Next ${days} Days)`;
+      summary = `<b>${deals.length}</b> deals · Total purchase value: <b>${fmt$(deals.reduce((s,d)=>s+(+d.purchase_price||0),0))}</b>`;
+    }
+    openModal(title, summary, dealsTable(deals));
   } else {
-    deals = activeP.filter(d =>
-      d.end_buyer_status && d.end_buyer_status !== 'Sold' &&
-      d.end_buyer_close_date && inRangeLocal(d.end_buyer_close_date, today, end)
-    ).sort((a,b) => parseLocalDate(a.end_buyer_close_date) - parseLocalDate(b.end_buyer_close_date));
-    const totalProfit = deals.reduce((s,d) => s + (+d.bucket_profit||0), 0);
-    openModal(`Sell-Side Closings (Next ${days} Days)`,
-      `<b>${deals.length}</b> deals · Total bucket profit: <b>${fmt$(totalProfit)}</b>`,
-      dealsTable(deals));
+    const sellActive = activeP.filter(d =>
+      d.end_buyer_status && d.end_buyer_status !== 'Sold' && d.end_buyer_status !== 'No Buyer' && d.end_buyer_status !== 'Marketing'
+    );
+    let deals, title, summary;
+    if (mode === 'overdue') {
+      deals = sellActive.filter(d => d.end_buyer_close_date && parseLocalDate(d.end_buyer_close_date) < today)
+        .sort((a,b) => parseLocalDate(a.end_buyer_close_date) - parseLocalDate(b.end_buyer_close_date));
+      title = 'Sell-Side: Overdue Closings';
+      summary = `<b>${deals.length}</b> LOCKED deals where the buyer's close date has already passed. ${fmt$(deals.reduce((s,d)=>s+(+d.bucket_profit||0),0))} in profit waiting.`;
+    } else if (mode === 'missing') {
+      deals = sellActive.filter(d => !d.end_buyer_close_date);
+      title = 'Sell-Side: No Close Date Set';
+      summary = `<b>${deals.length}</b> deals where buyer is signed but no close date is set. Add the date in Airtable.`;
+    } else {
+      const days = mode;
+      const end = addDays(today, days);
+      deals = sellActive.filter(d => d.end_buyer_close_date && inRangeLocal(d.end_buyer_close_date, today, end))
+        .sort((a,b) => parseLocalDate(a.end_buyer_close_date) - parseLocalDate(b.end_buyer_close_date));
+      title = `Sell-Side Closings (Next ${days} Days)`;
+      summary = `<b>${deals.length}</b> deals · Total bucket profit: <b>${fmt$(deals.reduce((s,d)=>s+(+d.bucket_profit||0),0))}</b>`;
+    }
+    openModal(title, summary, dealsTable(deals));
   }
 }
 
