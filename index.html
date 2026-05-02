@@ -602,7 +602,7 @@ function renderPulse(range) {
     card({
       label:'Terminated',
       value: fmtN(thisWeekRow.terminated),
-      sub:'tracking only · doesn\\'t count vs goal',
+      sub:'tracking only · does not count vs goal',
       cls: thisWeekRow.terminated > 0 ? 'term' : '',
       clickHandler:`showTerminatedDrill('${mondayStr}','${sundayStr}','Terminated This Week')`
     }),
