@@ -9,21 +9,17 @@
 <style>
   *{box-sizing:border-box}
   body{font-family:'Inter',system-ui,sans-serif;background:#f9fafb;color:#111827;margin:0;min-height:100vh}
-
-  /* Layout */
   .container{max-width:80rem;margin:0 auto;padding:0 24px}
   header{background:#fff;border-bottom:1px solid #e5e7eb;position:sticky;top:0;z-index:50}
   .header-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
   .header-left h1{font-size:16px;font-weight:600;margin:0}
   .header-left .sub{font-size:12px;color:#6b7280}
   .header-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-  nav{padding:0 24px;border-bottom:1px solid transparent}
+  nav{padding:0 24px}
   nav .tabs{display:flex;gap:24px;overflow-x:auto;max-width:80rem;margin:0 auto}
-  .tab-btn{transition:all .15s;color:#6b7280;border-bottom:2px solid transparent;white-space:nowrap;padding:10px 0;font-size:14px;background:none;border-top:none;border-left:none;border-right:none;cursor:pointer;font-family:inherit}
+  .tab-btn{transition:all .15s;color:#6b7280;border-bottom:2px solid transparent;white-space:nowrap;padding:10px 0;font-size:14px;background:none;border:none;cursor:pointer;font-family:inherit}
   .tab-btn:hover{color:#111827}
   .tab-btn.active{color:#111827;border-bottom-color:#111827;font-weight:600}
-
-  /* Period bar */
   .period-bar{background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 0}
   .period-inner{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .period-label{font-size:12px;color:#6b7280;font-weight:500;margin-right:4px}
@@ -34,17 +30,16 @@
   .custom-range-inputs.show{display:inline-flex}
   .custom-range-inputs input{font-size:12px;padding:4px 8px;border:1px solid #d1d5db;border-radius:5px;font-family:inherit}
   .period-display{margin-left:auto;font-size:12px;color:#6b7280;font-weight:500}
-
-  /* Cards */
   main{padding:24px 0}
-  .sec-h{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;margin:0 0 10px 0}
+  .sec-h{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b7280;margin:0 0 10px 0;display:flex;align-items:center;gap:6px}
   .sec-h.spaced{margin-top:28px}
+  .sec-help{font-size:11.5px;font-weight:400;text-transform:none;letter-spacing:0;color:#9ca3af;margin-left:8px}
   .grid{display:grid;gap:12px}
   .grid-2{grid-template-columns:repeat(2,1fr)}
   .grid-3{grid-template-columns:repeat(3,1fr)}
   .grid-4{grid-template-columns:repeat(4,1fr)}
   @media (max-width:900px){.grid-3,.grid-4{grid-template-columns:repeat(2,1fr)}}
-  .card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px}
+  .card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px;position:relative}
   .card.lg{padding:18px}
   .card.accent{background:linear-gradient(135deg,#fafbff 0%,#f4f5fb 100%);border-color:#dde1f0}
   .card.proj{background:linear-gradient(135deg,#fefce8 0%,#fef9c3 100%);border-color:#fde047}
@@ -54,17 +49,17 @@
   .card.warn{background:linear-gradient(135deg,#fffbeb 0%,#fef3c7 100%);border-color:#fde68a}
   .card.click{cursor:pointer;transition:transform .12s,box-shadow .12s}
   .card.click:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.06)}
+  .card.click::after{content:'↗';position:absolute;top:8px;right:10px;font-size:11px;color:#9ca3af;opacity:.6}
+  .card.click:hover::after{color:#111827;opacity:1}
   .kpi-label{font-size:10.5px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;font-weight:600;display:flex;align-items:center;gap:6px}
   .kpi-value{font-size:24px;font-weight:700;margin-top:4px;line-height:1.1}
   .kpi-sub{font-size:11px;color:#6b7280;margin-top:4px}
   .kpi-icon{font-size:14px}
-
-  /* Pills */
+  .kpi-warn{font-size:11px;color:#b45309;margin-top:4px;font-weight:500}
   .pill{display:inline-flex;align-items:center;padding:1px 7px;border-radius:9px;font-size:10.5px;font-weight:600}
   .pill-g{background:#dcfce7;color:#166534}
   .pill-y{background:#fef3c7;color:#854408}
   .pill-r{background:#fee2e2;color:#991818}
-  .pill-x{background:#f3f4f6;color:#374151}
   .pill-strategy{display:inline-block;padding:1px 8px;border-radius:9px;font-size:10px;font-weight:600;background:#eef2ff;color:#3730a3}
   .pill-strategy.dc{background:#fef3c7;color:#854408}
   .pill-strategy.as{background:#dcfce7;color:#166534}
@@ -75,9 +70,8 @@
   .pill-bucket-REALIZED{background:#d1fae5;color:#065f46}
   .pill-bucket-TERMINATED{background:#fee2e2;color:#991818}
   .pill-bucket-PROJECTED, .pill-bucket-LOCKED, .pill-bucket-REALIZED, .pill-bucket-TERMINATED{display:inline-block;padding:1px 8px;border-radius:9px;font-size:10px;font-weight:600}
-
-  /* Tables */
-  .card-t{font-size:14px;font-weight:600;margin-bottom:14px}
+  .card-t{font-size:14px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .card-t .help{font-size:11px;font-weight:400;color:#6b7280}
   table.dt{width:100%;border-collapse:collapse}
   table.dt th{text-align:left;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;padding:9px 11px;border-bottom:1px solid #e5e7eb;white-space:nowrap}
   table.dt th.num{text-align:right}
@@ -88,16 +82,12 @@
   table.dt a:hover{text-decoration:underline}
   table.dt .row-clickable{cursor:pointer}
   .scroll-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-
-  /* Hot lists */
   .hot-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid #f3f4f6;gap:10px}
   .hot-row:last-child{border-bottom:none}
   .hot-row .name{font-size:13px;font-weight:600}
   .hot-row .meta{font-size:11px;color:#6b7280;margin-top:2px}
   .hot-row .right{font-size:12px;color:#6b7280;text-align:right;white-space:nowrap}
   .hot-empty{font-size:12px;color:#9ca3af;font-style:italic;padding:14px 0;text-align:center}
-
-  /* Modal */
   .modal-bg{position:fixed;inset:0;background:rgba(17,24,39,.5);display:none;align-items:center;justify-content:center;z-index:200;padding:24px}
   .modal-bg.show{display:flex}
   .modal{background:#fff;border-radius:12px;max-width:1100px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.25)}
@@ -106,8 +96,8 @@
   .modal-h .x{cursor:pointer;border:none;background:none;font-size:20px;color:#6b7280;padding:4px 8px;border-radius:6px}
   .modal-h .x:hover{background:#f3f4f6;color:#111827}
   .modal-body{padding:16px 20px;overflow-y:auto;flex:1}
-
-  /* Misc */
+  .modal-summary{font-size:12px;color:#6b7280;margin-bottom:12px}
+  .modal-summary b{color:#111827;font-weight:600}
   .spinner{display:inline-block;width:14px;height:14px;border:2px solid #e5e7eb;border-top-color:#111827;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:6px}
   @keyframes spin{to{transform:rotate(360deg)}}
   .btn-primary{padding:6px 14px;background:#111827;color:white;border-radius:6px;font-size:12px;font-weight:500;border:none;cursor:pointer;font-family:inherit}
@@ -124,7 +114,8 @@
   .text-strong{color:#111827;font-weight:600}
   .err-banner{background:#fef2f2;border:1px solid #fecaca;color:#991818;padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:13px}
   .info-banner{background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:12px;display:flex;justify-content:space-between;align-items:center}
-
+  .data-quality-banner{background:#fffbeb;border:1px solid #fde68a;color:#854408;padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:12px;display:flex;align-items:center;gap:8px}
+  .data-quality-banner .icon{font-size:14px}
   footer{padding:24px 0;text-align:center;font-size:12px;color:#9ca3af}
 </style>
 </head>
@@ -188,10 +179,24 @@
 
     <!-- ─── PULSE ─── -->
     <section data-section="pulse">
-      <h2 class="sec-h">Today's Hot List</h2>
+      <h2 class="sec-h">Hit / Miss vs Goals (This Week) <span class="sec-help">click any card to see deals</span></h2>
+      <div id="pulse-goals" class="grid grid-4"></div>
+
+      <h2 class="sec-h spaced">My Pipeline Snapshot <span class="sec-help">click any bucket to see deals</span></h2>
+      <div id="pulse-snapshot" class="grid grid-4"></div>
+
+      <h2 class="sec-h spaced">This Week So Far</h2>
+      <div id="pulse-week" class="grid grid-4"></div>
+
+      <h2 class="sec-h spaced">My Active Deals <span class="sec-help">click any row for full deal detail</span></h2>
+      <div class="card">
+        <div class="scroll-wrap"><div id="pulse-active-deals"></div></div>
+      </div>
+
+      <h2 class="sec-h spaced">Today's Hot List</h2>
       <div class="grid grid-4">
         <div class="card lg">
-          <h3 class="kpi-label" style="margin-bottom:10px">🔥 Closing This Week</h3>
+          <h3 class="kpi-label" style="margin-bottom:10px">🔥 Closing This Week (Buy)</h3>
           <div id="hot-buy-closing"></div>
         </div>
         <div class="card lg">
@@ -207,15 +212,6 @@
           <div id="hot-stale-listings"></div>
         </div>
       </div>
-
-      <h2 class="sec-h spaced">This Week So Far</h2>
-      <div id="pulse-week" class="grid grid-4"></div>
-
-      <h2 class="sec-h spaced">Hit / Miss vs Goals</h2>
-      <div id="pulse-goals" class="grid grid-4"></div>
-
-      <h2 class="sec-h spaced">My Pipeline Snapshot</h2>
-      <div id="pulse-snapshot" class="grid grid-4"></div>
     </section>
 
     <!-- ─── PERFORMANCE ─── -->
@@ -225,7 +221,7 @@
         <div class="scroll-wrap"><div id="perf-ledger"></div></div>
       </div>
 
-      <h2 class="sec-h spaced">Conversion Funnel (Period Aggregate)</h2>
+      <h2 class="sec-h spaced">Conversion Funnel (Period Aggregate) <span class="sec-help">click cards to see deals/events</span></h2>
       <div id="perf-conversion" class="grid grid-4"></div>
 
       <h2 class="sec-h spaced">Activity-to-Outcome Efficiency</h2>
@@ -235,17 +231,17 @@
       <div class="grid grid-2">
         <div class="card lg"><h3 class="card-t">Funnel Volume Over Time</h3><canvas id="c-perf-funnel" height="160"></canvas></div>
         <div class="card lg"><h3 class="card-t">Talk Time per Contract Trend</h3><canvas id="c-perf-talk-per-contract" height="160"></canvas></div>
-        <div class="card lg"><h3 class="card-t">Conversion Ratios Over Time</h3><canvas id="c-perf-ratios" height="160"></canvas></div>
+        <div class="card lg"><h3 class="card-t">Conversion Ratios Over Time <span class="help">(lower = better)</span></h3><canvas id="c-perf-ratios" height="160"></canvas></div>
         <div class="card lg"><h3 class="card-t">Activity Over Time (Calls + Talk Hrs)</h3><canvas id="c-perf-activity" height="160"></canvas></div>
       </div>
     </section>
 
     <!-- ─── PIPELINE ─── -->
     <section data-section="pipeline" hidden>
-      <h2 class="sec-h">Phase Distribution</h2>
+      <h2 class="sec-h">Phase Distribution <span class="sec-help">click to see deals</span></h2>
       <div id="pipe-phases" class="grid grid-4"></div>
 
-      <h2 class="sec-h spaced">Strategy Mix</h2>
+      <h2 class="sec-h spaced">Strategy Mix <span class="sec-help">click to see deals</span></h2>
       <div id="pipe-strategy" class="grid grid-4"></div>
 
       <h2 class="sec-h spaced">Currently Listed</h2>
@@ -261,28 +257,43 @@
 
     <!-- ─── PROFIT ─── -->
     <section data-section="profit" hidden>
-      <h2 class="sec-h">Profit by Bucket (Active Pipeline)</h2>
+      <div class="info-banner">
+        <span><strong>Projected formula:</strong> <code>(Listing Price × 0.9) − (Purchase Price × 1.06)</code> · pulled from Airtable Deal Tracker. Locked uses End Buyer Contract Price instead. Realized uses HUD math when filled (else falls back to Deal Net Profit).</span>
+      </div>
+
+      <div id="projected-data-quality-banner" class="data-quality-banner" hidden>
+        <span class="icon">⚠️</span>
+        <span id="projected-data-quality-msg"></span>
+      </div>
+
+      <h2 class="sec-h">Profit by Bucket (Active Pipeline) <span class="sec-help">click to see deals</span></h2>
       <div id="profit-buckets" class="grid grid-4"></div>
 
-      <h2 class="sec-h spaced">Realized Profit</h2>
+      <h2 class="sec-h spaced">Realized Profit <span class="sec-help">click any card to see closed deals</span></h2>
       <div id="profit-realized" class="grid grid-4"></div>
 
-      <h2 class="sec-h spaced">Closing Timelines</h2>
+      <h2 class="sec-h spaced">Closing Timelines <span class="sec-help">click any bucket to see deals</span></h2>
       <div class="grid grid-2">
         <div class="card lg">
-          <h3 class="card-t">Buy-Side Closings (We Pay Seller)</h3>
+          <h3 class="card-t">Buy-Side (We Close on Purchase) <span class="help">we pay seller</span></h3>
           <div id="profit-buy-timeline" class="grid grid-4" style="gap:10px"></div>
         </div>
         <div class="card lg">
-          <h3 class="card-t">Sell-Side Closings (Buyer Pays Us)</h3>
+          <h3 class="card-t">Sell-Side (Buyer Closes on Us) <span class="help">buyer pays us</span></h3>
           <div id="profit-sell-timeline" class="grid grid-4" style="gap:10px"></div>
         </div>
       </div>
 
       <h2 class="sec-h spaced">Monthly Profit by Bucket</h2>
-      <div class="card lg"><canvas id="c-profit-monthly" height="120"></canvas></div>
+      <div class="card lg">
+        <div class="card-t">
+          <span>Projected vs Realized by Month</span>
+          <span class="help">Yellow = projected $ for deals contracted in that month · Green = realized $ for deals closed in that month</span>
+        </div>
+        <canvas id="c-profit-monthly" height="120"></canvas>
+      </div>
 
-      <h2 class="sec-h spaced">Closed Deals — Profit per Deal</h2>
+      <h2 class="sec-h spaced">Closed Deals — Profit per Deal (Lifetime)</h2>
       <div class="card lg"><canvas id="c-profit-per-deal" height="120"></canvas></div>
 
       <h2 class="sec-h spaced">Recently Closed (Period)</h2>
@@ -305,7 +316,7 @@
       </div>
 
       <div class="info-banner" style="margin-top:24px">
-        <span>📞 <strong>Coming next phase:</strong> Calls per deal, talk time per offer, and lead-to-contract attribution. Requires Quo webhooks build.</span>
+        <span>📞 <strong>Coming next phase:</strong> Calls per deal, talk time per offer, lead-to-contract attribution. Requires Quo webhooks build.</span>
       </div>
     </section>
   </div>
@@ -315,7 +326,7 @@
 <div id="drill-modal" class="modal-bg">
   <div class="modal">
     <div class="modal-h">
-      <h3 id="drill-title">Deal Details</h3>
+      <h3 id="drill-title">Details</h3>
       <button class="x" id="drill-close">×</button>
     </div>
     <div class="modal-body" id="drill-body"></div>
@@ -347,6 +358,78 @@ const state = {
   lastRefresh: null,
   autoTimer: null
 };
+
+//=============================================================================
+// DATE PARSING — IMPORTANT
+// 'YYYY-MM-DD' from Postgres parses as UTC midnight in JS, which in EDT
+// becomes the previous day. Use parseLocalDate() everywhere we get a date
+// string from Supabase, so comparisons line up with local "this week" math.
+//=============================================================================
+function parseLocalDate(s) {
+  if (!s) return null;
+  if (s instanceof Date) return s;
+  // Handle 'YYYY-MM-DD' or 'YYYY-MM-DDTHH:MM:SS+TZ' or full ISO
+  const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return new Date(s);
+  return new Date(parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3]));
+}
+function parseTimestamp(s) {
+  // For full timestamps (with time component), respect the original timezone
+  if (!s) return null;
+  return new Date(s);
+}
+function ymd(d) {
+  // Return 'YYYY-MM-DD' in local time
+  if (!d) return null;
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
+}
+
+function getMonday(d) {
+  const day = d.getDay();
+  const m = new Date(d);
+  m.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+  m.setHours(0,0,0,0);
+  return m;
+}
+function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
+function endOfMonth(d) { const e = new Date(d.getFullYear(), d.getMonth()+1, 0); e.setHours(23,59,59,999); return e; }
+function startOfYear(d) { return new Date(d.getFullYear(), 0, 1); }
+
+function getRange(period, customStart, customEnd) {
+  const today = new Date();
+  today.setHours(23,59,59,999);
+  const monday = getMonday(today);
+
+  switch(period) {
+    case 'this_week': return { start: monday, end: today, label: `This Week (${fmtD(monday)} → today)` };
+    case 'last_week': {
+      const s = addDays(monday, -7), e = addDays(monday, -1);
+      e.setHours(23,59,59,999);
+      return { start: s, end: e, label: `Last Week (${fmtD(s)} → ${fmtD(e)})` };
+    }
+    case 'last_4w': return { start: addDays(monday, -28), end: today, label: 'Last 4 Weeks' };
+    case 'last_8w': return { start: addDays(monday, -56), end: today, label: 'Last 8 Weeks' };
+    case 'mtd': return { start: startOfMonth(today), end: today, label: `MTD (${today.toLocaleString('en-US',{month:'long'})})` };
+    case 'last_month': {
+      const s = startOfMonth(new Date(today.getFullYear(), today.getMonth()-1, 1));
+      const e = endOfMonth(s);
+      return { start: s, end: e, label: `Last Month (${s.toLocaleString('en-US',{month:'long'})})` };
+    }
+    case 'ytd': return { start: startOfYear(today), end: today, label: `YTD (${today.getFullYear()})` };
+    case 'all': return { start: new Date(2020, 0, 1), end: today, label: 'All-Time' };
+    case 'custom': {
+      if (!customStart || !customEnd) return { start: monday, end: today, label: 'Pick dates →' };
+      const s = parseLocalDate(customStart);
+      const e = parseLocalDate(customEnd);
+      e.setHours(23,59,59,999);
+      return { start: s, end: e, label: `Custom (${fmtD(s)} → ${fmtD(e)})` };
+    }
+  }
+}
 
 //=============================================================================
 // FETCH
@@ -394,52 +477,6 @@ async function loadAll() {
 }
 
 //=============================================================================
-// DATE HELPERS
-//=============================================================================
-function getMonday(d) {
-  const day = d.getDay();
-  const m = new Date(d);
-  m.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
-  m.setHours(0,0,0,0);
-  return m;
-}
-function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
-function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
-function endOfMonth(d) { const e = new Date(d.getFullYear(), d.getMonth()+1, 0); e.setHours(23,59,59,999); return e; }
-function startOfYear(d) { return new Date(d.getFullYear(), 0, 1); }
-
-function getRange(period, customStart, customEnd) {
-  const today = new Date();
-  today.setHours(23,59,59,999);
-  const monday = getMonday(today);
-
-  switch(period) {
-    case 'this_week': return { start: monday, end: today, label: `This Week (${fmtD(monday)} → today)` };
-    case 'last_week': {
-      const s = addDays(monday, -7), e = addDays(monday, -1);
-      e.setHours(23,59,59,999);
-      return { start: s, end: e, label: `Last Week (${fmtD(s)} → ${fmtD(e)})` };
-    }
-    case 'last_4w': return { start: addDays(monday, -28), end: today, label: 'Last 4 Weeks' };
-    case 'last_8w': return { start: addDays(monday, -56), end: today, label: 'Last 8 Weeks' };
-    case 'mtd': return { start: startOfMonth(today), end: today, label: `MTD (${today.toLocaleString('en-US',{month:'long'})})` };
-    case 'last_month': {
-      const s = startOfMonth(new Date(today.getFullYear(), today.getMonth()-1, 1));
-      const e = endOfMonth(s);
-      return { start: s, end: e, label: `Last Month (${s.toLocaleString('en-US',{month:'long'})})` };
-    }
-    case 'ytd': return { start: startOfYear(today), end: today, label: `YTD (${today.getFullYear()})` };
-    case 'all': return { start: new Date(2020, 0, 1), end: today, label: 'All-Time' };
-    case 'custom': {
-      if (!customStart || !customEnd) return { start: monday, end: today, label: 'Pick dates →' };
-      const s = new Date(customStart + 'T00:00:00');
-      const e = new Date(customEnd + 'T23:59:59');
-      return { start: s, end: e, label: `Custom (${fmtD(s)} → ${fmtD(e)})` };
-    }
-  }
-}
-
-//=============================================================================
 // FORMAT HELPERS
 //=============================================================================
 const fmtN = n => (n==null||isNaN(+n)) ? '—' : Number(n).toLocaleString('en-US');
@@ -452,22 +489,19 @@ function fmt$(n) {
   if (Math.abs(v) >= 1e4) return (v<0?'-':'') + '$' + Math.round(Math.abs(v)/1e3) + 'k';
   return (v<0?'-':'') + '$' + Math.round(Math.abs(v)).toLocaleString('en-US');
 }
-const fmt$0 = n => (n==null||isNaN(+n)) ? '—' : '$' + Math.round(Number(n)).toLocaleString('en-US');
 const fmtPct = n => (n==null||isNaN(+n)) ? '—' : Number(n).toFixed(1) + '%';
 const fmtRatio = (top, bot) => (!top || !bot || +bot === 0) ? '—' : (Number(top)/Number(bot)).toFixed(1) + 'x';
 const fmtHrs = sec => (sec==null||isNaN(+sec)) ? '—' : (Number(sec)/3600).toFixed(1) + 'h';
-const fmtD = d => !d ? '—' : ((typeof d === 'string') ? new Date(d) : d).toLocaleDateString('en-US',{month:'short',day:'numeric'});
-const fmtDate = d => !d ? '—' : ((typeof d === 'string') ? new Date(d) : d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'});
-const fmtMonth = d => !d ? '—' : ((typeof d === 'string') ? new Date(d) : d).toLocaleDateString('en-US',{month:'short',year:'numeric'});
-function inRange(dateVal, start, end) {
+const fmtD = d => !d ? '—' : (typeof d === 'string' ? parseLocalDate(d) : d).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+const fmtDate = d => !d ? '—' : (typeof d === 'string' ? parseLocalDate(d) : d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'});
+const fmtMonth = d => !d ? '—' : (typeof d === 'string' ? parseLocalDate(d) : d).toLocaleDateString('en-US',{month:'short',year:'numeric'});
+
+function inRangeLocal(dateVal, start, end) {
   if (!dateVal) return false;
-  const d = new Date(dateVal);
+  const d = parseLocalDate(dateVal);
   return d >= start && d <= end;
 }
 
-//=============================================================================
-// PILL (KPI green/yellow/red)
-//=============================================================================
 function pill(kpiName, value) {
   const t = (state.data.thresholds || []).find(x => x.kpi_name === kpiName);
   if (!t || value == null) return '';
@@ -476,14 +510,6 @@ function pill(kpiName, value) {
   if (t.green_min != null || t.green_max != null) if (inR(t.green_min, t.green_max)) return ' <span class="pill pill-g">GREEN</span>';
   if (t.yellow_min != null || t.yellow_max != null) if (inR(t.yellow_min, t.yellow_max)) return ' <span class="pill pill-y">YELLOW</span>';
   if (t.red_min != null || t.red_max != null) if (inR(t.red_min, t.red_max)) return ' <span class="pill pill-r">RED</span>';
-  if (t.direction === 'higher_better' && t.green_min != null) {
-    if (v >= +t.green_min) return ' <span class="pill pill-g">GREEN</span>';
-    return ' <span class="pill pill-r">RED</span>';
-  }
-  if (t.direction === 'lower_better' && t.red_max != null) {
-    if (v >= +t.red_max) return ' <span class="pill pill-r">RED</span>';
-    return ' <span class="pill pill-g">GREEN</span>';
-  }
   return '';
 }
 
@@ -495,15 +521,13 @@ function strategyClass(s) {
   return 'pill-strategy';
 }
 
-//=============================================================================
-// CARD HELPERS
-//=============================================================================
-function card({ label, value, sub='', threshKpi='', cls='', icon='', clickHandler='' }) {
+function card({ label, value, sub='', warn='', threshKpi='', cls='', icon='', clickHandler='' }) {
   const click = clickHandler ? `class="card click ${cls}" onclick="${clickHandler}"` : `class="card ${cls}"`;
   return `<div ${click}>
     <div class="kpi-label">${icon ? `<span class="kpi-icon">${icon}</span>` : ''}${label}${threshKpi ? pill(threshKpi, value) : ''}</div>
     <div class="kpi-value">${value}</div>
     ${sub ? `<div class="kpi-sub">${sub}</div>` : ''}
+    ${warn ? `<div class="kpi-warn">${warn}</div>` : ''}
   </div>`;
 }
 
@@ -546,25 +570,171 @@ function renderAll() {
 function renderPulse(range) {
   const today = new Date(); today.setHours(0,0,0,0);
   const monday = getMonday(today);
-  const endOfWeek = today;
+  const mondayStr = ymd(monday);
   const sevenDaysOut = addDays(today, 7);
   const sixtyDaysAgo = addDays(today, -60);
 
   const pipeline = state.data.pipeline || [];
   const activeP = pipeline.filter(d => d.is_active);
 
-  // ─── Hot lists ───
-  // Buy-side closings (we pay seller, close_date this week)
+  // Find this week's row by STRING comparison (avoid timezone bug)
+  const thisWeekRow = (state.data.weekly || []).find(w => w.week_start === mondayStr) || {};
+
+  // ─── Goals (top) ───
+  const sundayStr = ymd(addDays(monday, 6));
+  document.getElementById('pulse-goals').innerHTML = [
+    card({
+      label:'New Contracts',
+      value: fmtN(thisWeekRow.new_contracts),
+      sub:'goal: 4/wk',
+      threshKpi:'deals_under_contract',
+      icon:'✍️',
+      clickHandler:`showContractsDrill('${mondayStr}','${sundayStr}','This Week')`
+    }),
+    card({
+      label:'Offers Made (Team)',
+      value: fmtN(thisWeekRow.offers_made),
+      sub:'goal: 20/wk',
+      threshKpi:'offers_made',
+      icon:'🎯',
+      clickHandler:`showFunnelEventsDrill('offer','${mondayStr}','${sundayStr}','Offers Made This Week')`
+    }),
+    card({
+      label:'Terminated',
+      value: fmtN(thisWeekRow.terminated),
+      sub:'tracking only · doesn\\'t count vs goal',
+      cls: thisWeekRow.terminated > 0 ? 'term' : '',
+      clickHandler:`showTerminatedDrill('${mondayStr}','${sundayStr}','Terminated This Week')`
+    }),
+    card({
+      label:'Realized $ (Closed)',
+      value: fmt$(thisWeekRow.realized_profit),
+      sub:`${fmtN(thisWeekRow.deals_closed||0)} deals closed`,
+      cls:'realized',
+      clickHandler:`showClosedDrill('${mondayStr}','${sundayStr}','Closed This Week')`
+    })
+  ].join('');
+
+  // ─── Snapshot (3 buckets + realized YTD) ───
+  const buckets = activeP.reduce((acc, d) => {
+    const b = d.profit_bucket || 'PROJECTED';
+    if (!acc[b]) acc[b] = { count: 0, total: 0 };
+    acc[b].count++;
+    acc[b].total += (+d.bucket_profit || 0);
+    return acc;
+  }, {});
+  const yearStart = startOfYear(today);
+  const realizedYTD = pipeline
+    .filter(d => d.profit_bucket === 'REALIZED' && d.actual_close_date && parseLocalDate(d.actual_close_date) >= yearStart)
+    .reduce((s,d) => s + (+d.bucket_profit || 0), 0);
+  const realizedYTDCount = pipeline
+    .filter(d => d.profit_bucket === 'REALIZED' && d.actual_close_date && parseLocalDate(d.actual_close_date) >= yearStart).length;
+
+  // Count missing-listing-price warnings
+  const projectedMissing = activeP.filter(d => d.profit_bucket === 'PROJECTED' && d.bucket_profit == null).length;
+  const projectedMissingWarn = projectedMissing > 0 ? `⚠️ ${projectedMissing} deals missing listing price` : '';
+
+  document.getElementById('pulse-snapshot').innerHTML = [
+    card({
+      label:'Active Deals',
+      value: fmtN(activeP.length),
+      sub:`PROJ ${buckets.PROJECTED?.count||0} · LOCK ${buckets.LOCKED?.count||0}`,
+      icon:'📋',
+      clickHandler:`showBucketDrill('ACTIVE')`
+    }),
+    card({
+      label:'Projected Profit',
+      value: fmt$(buckets.PROJECTED?.total||0),
+      sub:`across ${buckets.PROJECTED?.count||0} deals`,
+      warn: projectedMissingWarn,
+      cls:'proj',
+      clickHandler:`showBucketDrill('PROJECTED')`
+    }),
+    card({
+      label:'Locked Profit',
+      value: fmt$(buckets.LOCKED?.total||0),
+      sub:`${buckets.LOCKED?.count||0} deals · buyer signed`,
+      cls:'locked',
+      clickHandler:`showBucketDrill('LOCKED')`
+    }),
+    card({
+      label:'Realized YTD',
+      value: fmt$(realizedYTD),
+      sub:`${realizedYTDCount} deals · ${today.getFullYear()} so far`,
+      cls:'realized',
+      clickHandler:`showRealizedYTDDrill()`
+    })
+  ].join('');
+
+  // ─── This Week So Far ───
+  document.getElementById('pulse-week').innerHTML = [
+    card({
+      label:'Calls',
+      value: fmtN(thisWeekRow.total_calls),
+      sub: `${fmt1(thisWeekRow.talk_time_hours||0)} hrs talk`,
+      icon:'📞',
+      clickHandler:`showCallsDrill('${mondayStr}','${sundayStr}','Call Activity This Week')`
+    }),
+    card({
+      label:'Texts Sent',
+      value: fmtN(thisWeekRow.texts_sent),
+      icon:'💬',
+      clickHandler:`showCallsDrill('${mondayStr}','${sundayStr}','Activity This Week')`
+    }),
+    card({
+      label:'Leads (Team)',
+      value: fmtN(thisWeekRow.new_leads),
+      sub:'company-wide funnel',
+      clickHandler:`showFunnelEventsDrill('lead','${mondayStr}','${sundayStr}','Leads This Week')`
+    }),
+    card({
+      label:'Qualified (Team)',
+      value: fmtN(thisWeekRow.new_qualified),
+      sub:'moved to AM queue',
+      clickHandler:`showFunnelEventsDrill('qualified','${mondayStr}','${sundayStr}','Qualified This Week')`
+    })
+  ].join('');
+
+  // ─── Active Deals table (Pulse) ───
+  const phaseOrder = ['Under Contract','Due Diligence','Site Works','At Closing','Closed (Holding)','Marketing','Buyer Under Contract','Buyer Closing'];
+  const sortedActive = activeP.slice().sort((a,b) => {
+    const pa = phaseOrder.indexOf(a.deal_phase);
+    const pb = phaseOrder.indexOf(b.deal_phase);
+    if (pa !== pb) return (pa < 0 ? 999 : pa) - (pb < 0 ? 999 : pb);
+    return parseTimestamp(b.contract_date||0) - parseTimestamp(a.contract_date||0);
+  });
+  const activeRows = sortedActive.map(d => `<tr class="row-clickable" onclick="showDealDetail('${d.airtable_record_id}')">
+    <td><b>${d.deal_name||'—'}</b><div class="meta">${d.county||''}, ${d.state||''} · ${fmt1(d.acreage)} ac</div></td>
+    <td><span class="pill-phase">${d.deal_phase||'—'}</span></td>
+    <td><span class="pill-bucket-${d.profit_bucket}">${d.profit_bucket||'—'}</span></td>
+    <td class="num">${fmt$(d.purchase_price)}</td>
+    <td class="num">${d.listing_price ? fmt$(d.listing_price) : '<span class="text-rose">missing</span>'}</td>
+    <td class="num">${fmt$(d.end_buyer_contract_price)}</td>
+    <td class="num"><b>${fmt$(d.bucket_profit)}</b></td>
+    <td class="num">${fmtDate(d.dd_deadline)}</td>
+    <td class="num">${fmtDate(d.close_date)}</td>
+    <td class="num">${fmtDate(d.end_buyer_close_date)}</td>
+  </tr>`).join('');
+  document.getElementById('pulse-active-deals').innerHTML = `<table class="dt">
+    <thead><tr>
+      <th>Deal / Location</th><th>Phase</th><th>Bucket</th>
+      <th class="num">Purchase</th><th class="num">List</th><th class="num">Buyer $</th><th class="num">Profit</th>
+      <th class="num">DD Due</th><th class="num">Close (Buy)</th><th class="num">Close (Sell)</th>
+    </tr></thead>
+    <tbody>${activeRows || `<tr><td colspan="10" style="text-align:center;color:#9ca3af;padding:24px">No active deals</td></tr>`}</tbody>
+  </table>`;
+
+  // ─── Hot lists (bottom) ───
   const buySoon = pipeline
     .filter(d => d.close_date && d.acquisition_status !== 'Closed' && d.acquisition_status !== 'Terminated')
     .filter(d => {
-      const cd = new Date(d.close_date);
+      const cd = parseLocalDate(d.close_date);
       return cd >= today && cd <= sevenDaysOut;
     })
-    .sort((a,b) => new Date(a.close_date) - new Date(b.close_date));
+    .sort((a,b) => parseLocalDate(a.close_date) - parseLocalDate(b.close_date));
   document.getElementById('hot-buy-closing').innerHTML = buySoon.length === 0
     ? '<div class="hot-empty">Nothing closing this week</div>'
-    : buySoon.slice(0,5).map(d => `<div class="hot-row">
+    : buySoon.slice(0,5).map(d => `<div class="hot-row" onclick="showDealDetail('${d.airtable_record_id}')" style="cursor:pointer">
         <div>
           <div class="name">${d.deal_name||'—'}</div>
           <div class="meta">${d.county||''}, ${d.state||''} · ${fmt1(d.acreage)} ac</div>
@@ -575,17 +745,16 @@ function renderPulse(range) {
         </div>
       </div>`).join('');
 
-  // Sell-side closings (buyer pays us)
   const sellSoon = pipeline
     .filter(d => d.end_buyer_close_date && d.end_buyer_status !== 'Sold')
     .filter(d => {
-      const cd = new Date(d.end_buyer_close_date);
+      const cd = parseLocalDate(d.end_buyer_close_date);
       return cd >= today && cd <= sevenDaysOut;
     })
-    .sort((a,b) => new Date(a.end_buyer_close_date) - new Date(b.end_buyer_close_date));
+    .sort((a,b) => parseLocalDate(a.end_buyer_close_date) - parseLocalDate(b.end_buyer_close_date));
   document.getElementById('hot-sell-closing').innerHTML = sellSoon.length === 0
     ? '<div class="hot-empty">No buyer closes this week</div>'
-    : sellSoon.slice(0,5).map(d => `<div class="hot-row">
+    : sellSoon.slice(0,5).map(d => `<div class="hot-row" onclick="showDealDetail('${d.airtable_record_id}')" style="cursor:pointer">
         <div>
           <div class="name">${d.deal_name||'—'}</div>
           <div class="meta">${d.end_buyer_status||''}</div>
@@ -596,17 +765,16 @@ function renderPulse(range) {
         </div>
       </div>`).join('');
 
-  // DD deadlines this week
   const ddDue = activeP
     .filter(d => d.dd_deadline && d.acquisition_status === 'Due Diligence')
     .filter(d => {
-      const dd = new Date(d.dd_deadline);
+      const dd = parseLocalDate(d.dd_deadline);
       return dd >= today && dd <= sevenDaysOut;
     })
-    .sort((a,b) => new Date(a.dd_deadline) - new Date(b.dd_deadline));
+    .sort((a,b) => parseLocalDate(a.dd_deadline) - parseLocalDate(b.dd_deadline));
   document.getElementById('hot-dd').innerHTML = ddDue.length === 0
     ? '<div class="hot-empty">No DD deadlines this week</div>'
-    : ddDue.slice(0,5).map(d => `<div class="hot-row">
+    : ddDue.slice(0,5).map(d => `<div class="hot-row" onclick="showDealDetail('${d.airtable_record_id}')" style="cursor:pointer">
         <div>
           <div class="name">${d.deal_name||'—'}</div>
           <div class="meta">${d.state||''} · ${fmt1(d.acreage)} ac</div>
@@ -617,16 +785,15 @@ function renderPulse(range) {
         </div>
       </div>`).join('');
 
-  // Stale listings: listed >60 days, no buyer
   const staleListings = activeP
     .filter(d => d.date_listed && (!d.end_buyer_status || d.end_buyer_status === 'No Buyer' || d.end_buyer_status === 'Marketing'))
-    .filter(d => new Date(d.date_listed) < sixtyDaysAgo)
-    .sort((a,b) => new Date(a.date_listed) - new Date(b.date_listed));
+    .filter(d => parseLocalDate(d.date_listed) < sixtyDaysAgo)
+    .sort((a,b) => parseLocalDate(a.date_listed) - parseLocalDate(b.date_listed));
   document.getElementById('hot-stale-listings').innerHTML = staleListings.length === 0
     ? '<div class="hot-empty">No stale listings 🎉</div>'
     : staleListings.slice(0,5).map(d => {
-        const daysListed = Math.floor((today - new Date(d.date_listed)) / 86400000);
-        return `<div class="hot-row">
+        const daysListed = Math.floor((today - parseLocalDate(d.date_listed)) / 86400000);
+        return `<div class="hot-row" onclick="showDealDetail('${d.airtable_record_id}')" style="cursor:pointer">
           <div>
             <div class="name">${d.deal_name||'—'}</div>
             <div class="meta">${d.state||''} · ${fmt$(d.listing_price)} list</div>
@@ -637,47 +804,6 @@ function renderPulse(range) {
           </div>
         </div>`;
       }).join('');
-
-  // ─── This Week So Far ───
-  const thisWeekRow = (state.data.weekly || []).find(w =>
-    new Date(w.week_start).getTime() === monday.getTime()
-  ) || {};
-
-  document.getElementById('pulse-week').innerHTML = [
-    card({ label:'Calls', value: fmtN(thisWeekRow.total_calls), sub: `${fmt1(thisWeekRow.talk_time_hours||0)} hrs talk`, icon:'📞' }),
-    card({ label:'Texts Sent', value: fmtN(thisWeekRow.texts_sent), icon:'💬' }),
-    card({ label:'Leads (Team)', value: fmtN(thisWeekRow.new_leads), sub:'company-wide funnel' }),
-    card({ label:'Qualified (Team)', value: fmtN(thisWeekRow.new_qualified) })
-  ].join('');
-
-  // ─── Goals ───
-  document.getElementById('pulse-goals').innerHTML = [
-    card({ label:'New Contracts', value: fmtN(thisWeekRow.new_contracts), sub:'goal: 4/wk', threshKpi:'deals_under_contract', icon:'✍️' }),
-    card({ label:'Offers (Team)', value: fmtN(thisWeekRow.offers_made), sub:'goal: 20/wk', threshKpi:'offers_made', icon:'🎯' }),
-    card({ label:'Terminated', value: fmtN(thisWeekRow.terminated), sub:'tracked separately', cls: thisWeekRow.terminated > 0 ? 'term' : '' }),
-    card({ label:'Realized $ (Closed)', value: fmt$(thisWeekRow.realized_profit), sub:`${fmtN(thisWeekRow.deals_closed||0)} deals closed`, cls:'realized' })
-  ].join('');
-
-  // ─── Pipeline Snapshot ───
-  const buckets = activeP.reduce((acc, d) => {
-    const b = d.profit_bucket || 'PROJECTED';
-    acc[b] = (acc[b] || 0) + 1;
-    acc[`${b}_$`] = (acc[`${b}_$`] || 0) + (+d.bucket_profit || 0);
-    return acc;
-  }, {});
-  // Realized this year
-  const today2 = new Date(); today2.setHours(0,0,0,0);
-  const yearStart = startOfYear(today2);
-  const realizedYTD = pipeline
-    .filter(d => d.profit_bucket === 'REALIZED' && d.actual_close_date && new Date(d.actual_close_date) >= yearStart)
-    .reduce((s,d) => s + (+d.bucket_profit || 0), 0);
-
-  document.getElementById('pulse-snapshot').innerHTML = [
-    card({ label:'Active Deals', value: fmtN(activeP.length), sub:`PROJ ${buckets.PROJECTED||0} · LOCK ${buckets.LOCKED||0}`, icon:'📋' }),
-    card({ label:'Projected Profit', value: fmt$(buckets.PROJECTED_$||0), sub:`across ${buckets.PROJECTED||0} deals`, cls:'proj', clickHandler:`showDrillDown('PROJECTED')` }),
-    card({ label:'Locked Profit', value: fmt$(buckets.LOCKED_$||0), sub:`across ${buckets.LOCKED||0} deals`, cls:'locked', clickHandler:`showDrillDown('LOCKED')` }),
-    card({ label:'Realized YTD', value: fmt$(realizedYTD), sub:`${today.getFullYear()} so far`, cls:'realized', clickHandler:`showDrillDown('REALIZED')` })
-  ].join('');
 }
 
 //=============================================================================
@@ -685,26 +811,26 @@ function renderPulse(range) {
 //=============================================================================
 function renderPerformance(range) {
   const allWeekly = state.data.weekly || [];
-  // Filter by period range
-  const inPeriod = allWeekly.filter(w => {
-    const ws = new Date(w.week_start);
-    return ws >= range.start && ws <= range.end;
-  });
+  // FIX: compare week_start as date string within range (no Date object timezone bugs)
+  const startStr = ymd(range.start);
+  const endStr = ymd(range.end);
+  const inPeriod = allWeekly.filter(w => w.week_start >= startStr && w.week_start <= endStr);
 
   // ─── Ledger table ───
   const rows = inPeriod.map(w => {
     const goalPill = pill('deals_under_contract', w.new_contracts);
+    const wEnd = ymd(addDays(parseLocalDate(w.week_start), 6));
     return `<tr>
       <td><b>${fmtD(w.week_start)}</b></td>
-      <td class="num">${fmtN(w.total_calls)}</td>
+      <td class="num"><a href="#" onclick="showCallsDrill('${w.week_start}','${wEnd}','Calls — Week of ${fmtD(w.week_start)}');return false;">${fmtN(w.total_calls)}</a></td>
       <td class="num">${fmt2(w.talk_time_hours)}</td>
       <td class="num">${fmtN(w.texts_sent)}</td>
-      <td class="num">${fmtN(w.new_leads)}</td>
-      <td class="num">${fmtN(w.new_qualified)}</td>
-      <td class="num">${fmtN(w.offers_made)}</td>
-      <td class="num"><b>${fmtN(w.new_contracts)}</b>${goalPill}</td>
-      <td class="num">${w.terminated > 0 ? `<span class="text-rose">${fmtN(w.terminated)}</span>` : '0'}</td>
-      <td class="num">${fmtN(w.deals_closed)}</td>
+      <td class="num"><a href="#" onclick="showFunnelEventsDrill('lead','${w.week_start}','${wEnd}','Leads — Week of ${fmtD(w.week_start)}');return false;">${fmtN(w.new_leads)}</a></td>
+      <td class="num"><a href="#" onclick="showFunnelEventsDrill('qualified','${w.week_start}','${wEnd}','Qualified — Week of ${fmtD(w.week_start)}');return false;">${fmtN(w.new_qualified)}</a></td>
+      <td class="num"><a href="#" onclick="showFunnelEventsDrill('offer','${w.week_start}','${wEnd}','Offers — Week of ${fmtD(w.week_start)}');return false;">${fmtN(w.offers_made)}</a></td>
+      <td class="num"><b><a href="#" onclick="showContractsDrill('${w.week_start}','${wEnd}','Contracts — Week of ${fmtD(w.week_start)}');return false;">${fmtN(w.new_contracts)}</a></b>${goalPill}</td>
+      <td class="num">${w.terminated > 0 ? `<a href="#" onclick="showTerminatedDrill('${w.week_start}','${wEnd}','Terminated — Week of ${fmtD(w.week_start)}');return false;" class="text-rose">${fmtN(w.terminated)}</a>` : '0'}</td>
+      <td class="num">${w.deals_closed > 0 ? `<a href="#" onclick="showClosedDrill('${w.week_start}','${wEnd}','Closed — Week of ${fmtD(w.week_start)}');return false;">${fmtN(w.deals_closed)}</a>` : '0'}</td>
       <td class="num text-emerald">${fmt$(w.realized_profit)}</td>
       <td class="num">${w.talk_hours_per_contract != null ? fmt2(w.talk_hours_per_contract) + ' hrs' : '—'}</td>
     </tr>`;
@@ -737,10 +863,10 @@ function renderPerformance(range) {
     closed: (acc.closed||0) + (+w.deals_closed||0)
   }), {});
   document.getElementById('perf-conversion').innerHTML = [
-    card({ label:'Leads', value: fmtN(tot.leads), sub:'company-wide' }),
-    card({ label:'Leads → Qualified', value: fmtRatio(tot.leads, tot.qualified), sub:`${fmtN(tot.qualified)} qualified` }),
-    card({ label:'Qualified → Offer', value: fmtRatio(tot.qualified, tot.offers), sub:`${fmtN(tot.offers)} offers` }),
-    card({ label:'Offer → Contract', value: fmtRatio(tot.offers, tot.contracts), sub:`${fmtN(tot.contracts)} contracts`, cls:'accent' })
+    card({ label:'Leads', value: fmtN(tot.leads), sub:'company-wide', clickHandler:`showFunnelEventsDrill('lead','${startStr}','${endStr}','Leads in Period')` }),
+    card({ label:'Leads → Qualified', value: fmtRatio(tot.leads, tot.qualified), sub:`${fmtN(tot.qualified)} qualified`, clickHandler:`showFunnelEventsDrill('qualified','${startStr}','${endStr}','Qualified in Period')` }),
+    card({ label:'Qualified → Offer', value: fmtRatio(tot.qualified, tot.offers), sub:`${fmtN(tot.offers)} offers`, clickHandler:`showFunnelEventsDrill('offer','${startStr}','${endStr}','Offers in Period')` }),
+    card({ label:'Offer → Contract', value: fmtRatio(tot.offers, tot.contracts), sub:`${fmtN(tot.contracts)} contracts`, cls:'accent', clickHandler:`showContractsDrill('${startStr}','${endStr}','Contracts in Period')` })
   ].join('');
 
   // ─── Activity-to-outcome efficiency ───
@@ -751,13 +877,13 @@ function renderPerformance(range) {
   const talkPerContract = tot.contracts > 0 ? (totTalkHrs / tot.contracts).toFixed(2) : null;
   const talkPerOffer = tot.offers > 0 ? (totTalkHrs / tot.offers).toFixed(2) : null;
   document.getElementById('perf-efficiency').innerHTML = [
-    card({ label:'Total Calls', value: fmtN(totCalls), sub:`${fmt1(totTalkHrs)} hrs talk · ${fmtN(totTexts)} texts` }),
+    card({ label:'Total Calls', value: fmtN(totCalls), sub:`${fmt1(totTalkHrs)} hrs talk · ${fmtN(totTexts)} texts`, clickHandler:`showCallsDrill('${startStr}','${endStr}','Activity in Period')` }),
     card({ label:'Calls per Contract', value: callsPerContract != null ? `${callsPerContract}` : '—', sub:'lower = better' }),
     card({ label:'Talk Hrs per Contract', value: talkPerContract != null ? `${talkPerContract} hrs` : '—', sub:'lower = better', cls:'accent' }),
     card({ label:'Talk Hrs per Offer', value: talkPerOffer != null ? `${talkPerOffer} hrs` : '—', sub:'lower = better' })
   ].join('');
 
-  // ─── Trend charts (use last 16 weeks regardless of filter, for trend stability) ───
+  // ─── Trend charts (last 16 weeks regardless of filter) ───
   const trendWeeks = allWeekly.slice(0, 16).reverse();
   const labels = trendWeeks.map(w => fmtD(w.week_start));
 
@@ -783,9 +909,9 @@ function renderPerformance(range) {
   makeChart('c-perf-ratios', 'line', {
     labels,
     datasets: [
-      { label:'Lead → Qual', data: trendWeeks.map(w => w.new_qualified > 0 ? +(w.new_leads / w.new_qualified).toFixed(1) : null), borderColor:'#3b82f6', tension:0.3 },
-      { label:'Qual → Offer', data: trendWeeks.map(w => w.offers_made > 0 ? +(w.new_qualified / w.offers_made).toFixed(1) : null), borderColor:'#f59e0b', tension:0.3 },
-      { label:'Offer → Contract', data: trendWeeks.map(w => w.new_contracts > 0 ? +(w.offers_made / w.new_contracts).toFixed(1) : null), borderColor:'#10b981', tension:0.3 }
+      { label:'Leads per Qualified', data: trendWeeks.map(w => w.new_qualified > 0 ? +(w.new_leads / w.new_qualified).toFixed(1) : null), borderColor:'#3b82f6', tension:0.3 },
+      { label:'Qualified per Offer', data: trendWeeks.map(w => w.offers_made > 0 ? +(w.new_qualified / w.offers_made).toFixed(1) : null), borderColor:'#f59e0b', tension:0.3 },
+      { label:'Offers per Contract', data: trendWeeks.map(w => w.new_contracts > 0 ? +(w.offers_made / w.new_contracts).toFixed(1) : null), borderColor:'#10b981', tension:0.3 }
     ]
   });
 
@@ -811,7 +937,6 @@ function renderPipeline(range) {
   const pipeline = state.data.pipeline || [];
   const activeP = pipeline.filter(d => d.is_active);
 
-  // ─── Phase distribution ───
   const phaseOrder = ['Under Contract','Due Diligence','Site Works','At Closing','Closed (Holding)','Marketing','Buyer Under Contract','Buyer Closing'];
   const phases = activeP.reduce((acc, d) => {
     const p = d.deal_phase || 'Unknown';
@@ -824,10 +949,14 @@ function renderPipeline(range) {
   document.getElementById('pipe-phases').innerHTML = phasesShown.length === 0
     ? '<div class="card"><div class="kpi-sub">No active deals.</div></div>'
     : phasesShown.map(p =>
-        card({ label: p, value: fmtN(phases[p].count), sub: fmt$(phases[p].value) + ' total' })
+        card({
+          label: p,
+          value: fmtN(phases[p].count),
+          sub: fmt$(phases[p].value) + ' total',
+          clickHandler: `showPhaseDrill(${JSON.stringify(p).replace(/"/g,'&quot;')})`
+        })
       ).join('');
 
-  // ─── Strategy mix ───
   const strats = activeP.reduce((acc, d) => {
     const s = d.closing_type || 'Unspecified';
     if (!acc[s]) acc[s] = { count: 0, value: 0 };
@@ -839,10 +968,14 @@ function renderPipeline(range) {
   document.getElementById('pipe-strategy').innerHTML = stratsList.length === 0
     ? '<div class="card"><div class="kpi-sub">No closing types set.</div></div>'
     : stratsList.map(([s, info]) =>
-        card({ label: s, value: fmtN(info.count), sub: fmt$(info.value) + ' projected' })
+        card({
+          label: s,
+          value: fmtN(info.count),
+          sub: fmt$(info.value) + ' projected',
+          clickHandler: `showStrategyDrill(${JSON.stringify(s).replace(/"/g,'&quot;')})`
+        })
       ).join('');
 
-  // ─── Currently Listed ───
   const listings = state.data.listings || [];
   const listRows = listings.map(l => `<tr>
     <td><b>${l.deal_name||'—'}</b><div class="meta">${l.county||''}, ${l.state||''} · ${fmt1(l.acreage)} ac</div></td>
@@ -865,22 +998,20 @@ function renderPipeline(range) {
     <tbody>${listRows || `<tr><td colspan="10" style="text-align:center;color:#9ca3af;padding:24px">No active listings</td></tr>`}</tbody>
   </table>`;
 
-  // ─── My Active Deals ───
   const sortedActive = activeP.slice().sort((a,b) => {
-    // Sort by phase order, then by contract_date desc
     const pa = phaseOrder.indexOf(a.deal_phase);
     const pb = phaseOrder.indexOf(b.deal_phase);
     if (pa !== pb) return (pa < 0 ? 999 : pa) - (pb < 0 ? 999 : pb);
-    return new Date(b.contract_date||0) - new Date(a.contract_date||0);
+    return parseTimestamp(b.contract_date||0) - parseTimestamp(a.contract_date||0);
   });
-  const dealRows = sortedActive.map((d, idx) => `<tr class="row-clickable" onclick="showDealDetail('${d.airtable_record_id}')">
+  const dealRows = sortedActive.map(d => `<tr class="row-clickable" onclick="showDealDetail('${d.airtable_record_id}')">
     <td><b>${d.deal_name||'—'}</b><div class="meta">${d.county||''}, ${d.state||''} · ${fmt1(d.acreage)} ac</div></td>
     <td><span class="pill-phase">${d.deal_phase||'—'}</span></td>
     <td><span class="pill-bucket-${d.profit_bucket}">${d.profit_bucket||'—'}</span></td>
     <td>${d.closing_type ? `<span class="${strategyClass(d.closing_type)}">${d.closing_type}</span>` : '—'}</td>
     <td class="num">${fmtN(d.days_under_contract)}d</td>
     <td class="num">${fmt$(d.purchase_price)}</td>
-    <td class="num">${fmt$(d.listing_price)}</td>
+    <td class="num">${d.listing_price ? fmt$(d.listing_price) : '<span class="text-rose">missing</span>'}</td>
     <td class="num">${fmt$(d.end_buyer_contract_price)}</td>
     <td class="num text-emerald"><b>${fmt$(d.bucket_profit)}</b></td>
     <td class="num">${fmtDate(d.dd_deadline)}</td>
@@ -904,6 +1035,20 @@ function renderProfit(range) {
   const pipeline = state.data.pipeline || [];
   const activeP = pipeline.filter(d => d.is_active);
   const today = new Date(); today.setHours(0,0,0,0);
+  const startStr = ymd(range.start);
+  const endStr = ymd(range.end);
+
+  // Data quality banner: missing listing prices on active PROJECTED deals
+  const projDeals = activeP.filter(d => d.profit_bucket === 'PROJECTED');
+  const projMissing = projDeals.filter(d => d.bucket_profit == null);
+  const dqBanner = document.getElementById('projected-data-quality-banner');
+  if (projMissing.length > 0) {
+    dqBanner.hidden = false;
+    document.getElementById('projected-data-quality-msg').innerHTML =
+      `<strong>${projMissing.length} of ${projDeals.length} PROJECTED deals are missing a Listing Price in Airtable</strong> — they contribute $0 to the Projected total. Total purchase price of those deals: ${fmt$(projMissing.reduce((s,d)=>s+(+d.purchase_price||0),0))}. <a href="#" onclick="showMissingListingDrill();return false;" style="color:#854408;text-decoration:underline">See deals →</a>`;
+  } else {
+    dqBanner.hidden = true;
+  }
 
   // ─── 4 buckets ───
   const buckets = activeP.reduce((acc, d) => {
@@ -913,77 +1058,127 @@ function renderProfit(range) {
     acc[b].total += (+d.bucket_profit || 0);
     return acc;
   }, {});
-  // Terminated lifetime tracking from pipeline (not active filter — want all-time terminations)
   const terminatedAll = pipeline.filter(d => d.profit_bucket === 'TERMINATED');
 
   document.getElementById('profit-buckets').innerHTML = [
-    card({ label:'PROJECTED', value: fmt$(buckets.PROJECTED?.total||0), sub:`${buckets.PROJECTED?.count||0} deals · listing-based`, cls:'proj', clickHandler:`showDrillDown('PROJECTED')` }),
-    card({ label:'LOCKED', value: fmt$(buckets.LOCKED?.total||0), sub:`${buckets.LOCKED?.count||0} deals · buyer signed`, cls:'locked', clickHandler:`showDrillDown('LOCKED')` }),
-    card({ label:'REALIZED (Active Only)', value: fmt$(buckets.REALIZED?.total||0), sub:`${buckets.REALIZED?.count||0} deals · cash in`, cls:'realized', clickHandler:`showDrillDown('REALIZED_ACTIVE')` }),
-    card({ label:'TERMINATED (Lifetime)', value: fmtN(terminatedAll.length), sub:`tracking, doesn't count`, cls:'term', clickHandler:`showDrillDown('TERMINATED')` })
+    card({
+      label:'PROJECTED',
+      value: fmt$(buckets.PROJECTED?.total||0),
+      sub:`${buckets.PROJECTED?.count||0} deals · listing-based`,
+      cls:'proj',
+      clickHandler:`showBucketDrill('PROJECTED')`
+    }),
+    card({
+      label:'LOCKED',
+      value: fmt$(buckets.LOCKED?.total||0),
+      sub:`${buckets.LOCKED?.count||0} deals · buyer signed`,
+      cls:'locked',
+      clickHandler:`showBucketDrill('LOCKED')`
+    }),
+    card({
+      label:'REALIZED (Active)',
+      value: fmt$(buckets.REALIZED?.total||0),
+      sub:`${buckets.REALIZED?.count||0} deals · cash in`,
+      cls:'realized',
+      clickHandler:`showBucketDrill('REALIZED_ACTIVE')`
+    }),
+    card({
+      label:'TERMINATED (Lifetime)',
+      value: fmtN(terminatedAll.length),
+      sub:`tracking only · doesn't count`,
+      cls:'term',
+      clickHandler:`showBucketDrill('TERMINATED')`
+    })
   ].join('');
 
-  // ─── Realized profit YTD/MTD/lifetime ───
+  // ─── Realized profit YTD/MTD/Period/Lifetime ───
   const yearStart = startOfYear(today);
   const monthStart = startOfMonth(today);
   const realizedAll = pipeline.filter(d => d.profit_bucket === 'REALIZED' && d.actual_close_date);
-  const realizedYTD = realizedAll.filter(d => new Date(d.actual_close_date) >= yearStart);
-  const realizedMTD = realizedAll.filter(d => new Date(d.actual_close_date) >= monthStart);
-  const realizedInRange = realizedAll.filter(d => inRange(d.actual_close_date, range.start, range.end));
+  const realizedYTD = realizedAll.filter(d => parseLocalDate(d.actual_close_date) >= yearStart);
+  const realizedMTD = realizedAll.filter(d => parseLocalDate(d.actual_close_date) >= monthStart);
+  const realizedInRange = realizedAll.filter(d => inRangeLocal(d.actual_close_date, range.start, range.end));
+
+  const ytdStartStr = ymd(yearStart);
+  const todayStr = ymd(today);
+  const monthStartStr = ymd(monthStart);
 
   document.getElementById('profit-realized').innerHTML = [
-    card({ label:'Realized — Period', value: fmt$(realizedInRange.reduce((s,d)=>s+(+d.bucket_profit||0),0)), sub:`${realizedInRange.length} deals`, cls:'realized' }),
-    card({ label:'Realized YTD', value: fmt$(realizedYTD.reduce((s,d)=>s+(+d.bucket_profit||0),0)), sub:`${realizedYTD.length} deals · ${today.getFullYear()}`, cls:'accent' }),
-    card({ label:'Realized MTD', value: fmt$(realizedMTD.reduce((s,d)=>s+(+d.bucket_profit||0),0)), sub:`${realizedMTD.length} deals · ${today.toLocaleString('en-US',{month:'long'})}` }),
-    card({ label:'Realized Lifetime', value: fmt$(realizedAll.reduce((s,d)=>s+(+d.bucket_profit||0),0)), sub:`${realizedAll.length} deals total` })
+    card({
+      label:'Realized — Period',
+      value: fmt$(realizedInRange.reduce((s,d)=>s+(+d.bucket_profit||0),0)),
+      sub:`${realizedInRange.length} deals`,
+      cls:'realized',
+      clickHandler:`showClosedDrill('${startStr}','${endStr}','Closed in Period')`
+    }),
+    card({
+      label:'Realized YTD',
+      value: fmt$(realizedYTD.reduce((s,d)=>s+(+d.bucket_profit||0),0)),
+      sub:`${realizedYTD.length} deals · ${today.getFullYear()}`,
+      cls:'accent',
+      clickHandler:`showClosedDrill('${ytdStartStr}','${todayStr}','Closed YTD')`
+    }),
+    card({
+      label:'Realized MTD',
+      value: fmt$(realizedMTD.reduce((s,d)=>s+(+d.bucket_profit||0),0)),
+      sub:`${realizedMTD.length} deals · ${today.toLocaleString('en-US',{month:'long'})}`,
+      clickHandler:`showClosedDrill('${monthStartStr}','${todayStr}','Closed MTD')`
+    }),
+    card({
+      label:'Realized Lifetime',
+      value: fmt$(realizedAll.reduce((s,d)=>s+(+d.bucket_profit||0),0)),
+      sub:`${realizedAll.length} deals total`,
+      clickHandler:`showAllRealizedDrill()`
+    })
   ].join('');
 
-  // ─── Closing timelines ───
-  const buckets30 = (filterFn, getDate) => {
-    const r7 = addDays(today, 7);
-    const r30 = addDays(today, 30);
-    const r60 = addDays(today, 60);
-    const r90 = addDays(today, 90);
-    const between = (s, e) => activeP.filter(d => filterFn(d) && getDate(d) && new Date(getDate(d)) >= s && new Date(getDate(d)) <= e);
-    return {
-      week: between(today, r7),
-      m30: between(today, r30),
-      m60: between(today, r60),
-      m90: between(today, r90)
-    };
-  };
-  const buyTime = buckets30(d => d.acquisition_status !== 'Closed' && d.acquisition_status !== 'Terminated', d => d.close_date);
+  // ─── Closing timelines (clickable) ───
+  const buyTimeFn = (start, end) => activeP.filter(d => 
+    d.acquisition_status !== 'Closed' && d.acquisition_status !== 'Terminated' &&
+    d.close_date && inRangeLocal(d.close_date, start, end)
+  );
+  const sellTimeFn = (start, end) => activeP.filter(d =>
+    d.end_buyer_status && d.end_buyer_status !== 'Sold' &&
+    d.end_buyer_close_date && inRangeLocal(d.end_buyer_close_date, start, end)
+  );
+  const buyWk = buyTimeFn(today, addDays(today,7));
+  const buy30 = buyTimeFn(today, addDays(today,30));
+  const buy60 = buyTimeFn(today, addDays(today,60));
+  const buy90 = buyTimeFn(today, addDays(today,90));
   document.getElementById('profit-buy-timeline').innerHTML = [
-    card({ label:'7 Days', value: fmtN(buyTime.week.length), sub: fmt$(buyTime.week.reduce((s,d)=>s+(+d.purchase_price||0),0)) }),
-    card({ label:'30 Days', value: fmtN(buyTime.m30.length), sub: fmt$(buyTime.m30.reduce((s,d)=>s+(+d.purchase_price||0),0)) }),
-    card({ label:'60 Days', value: fmtN(buyTime.m60.length), sub: fmt$(buyTime.m60.reduce((s,d)=>s+(+d.purchase_price||0),0)) }),
-    card({ label:'90 Days', value: fmtN(buyTime.m90.length), sub: fmt$(buyTime.m90.reduce((s,d)=>s+(+d.purchase_price||0),0)) })
+    card({ label:'7 Days', value: fmtN(buyWk.length), sub: fmt$(buyWk.reduce((s,d)=>s+(+d.purchase_price||0),0)), clickHandler:`showTimelineDrill('buy', 7)` }),
+    card({ label:'30 Days', value: fmtN(buy30.length), sub: fmt$(buy30.reduce((s,d)=>s+(+d.purchase_price||0),0)), clickHandler:`showTimelineDrill('buy', 30)` }),
+    card({ label:'60 Days', value: fmtN(buy60.length), sub: fmt$(buy60.reduce((s,d)=>s+(+d.purchase_price||0),0)), clickHandler:`showTimelineDrill('buy', 60)` }),
+    card({ label:'90 Days', value: fmtN(buy90.length), sub: fmt$(buy90.reduce((s,d)=>s+(+d.purchase_price||0),0)), clickHandler:`showTimelineDrill('buy', 90)` })
   ].join('');
-  const sellTime = buckets30(d => d.end_buyer_status && d.end_buyer_status !== 'Sold', d => d.end_buyer_close_date);
+  const sellWk = sellTimeFn(today, addDays(today,7));
+  const sell30 = sellTimeFn(today, addDays(today,30));
+  const sell60 = sellTimeFn(today, addDays(today,60));
+  const sell90 = sellTimeFn(today, addDays(today,90));
   document.getElementById('profit-sell-timeline').innerHTML = [
-    card({ label:'7 Days', value: fmtN(sellTime.week.length), sub: fmt$(sellTime.week.reduce((s,d)=>s+(+d.bucket_profit||0),0)) + ' profit' }),
-    card({ label:'30 Days', value: fmtN(sellTime.m30.length), sub: fmt$(sellTime.m30.reduce((s,d)=>s+(+d.bucket_profit||0),0)) + ' profit' }),
-    card({ label:'60 Days', value: fmtN(sellTime.m60.length), sub: fmt$(sellTime.m60.reduce((s,d)=>s+(+d.bucket_profit||0),0)) + ' profit' }),
-    card({ label:'90 Days', value: fmtN(sellTime.m90.length), sub: fmt$(sellTime.m90.reduce((s,d)=>s+(+d.bucket_profit||0),0)) + ' profit' })
+    card({ label:'7 Days', value: fmtN(sellWk.length), sub: fmt$(sellWk.reduce((s,d)=>s+(+d.bucket_profit||0),0)) + ' profit', clickHandler:`showTimelineDrill('sell', 7)` }),
+    card({ label:'30 Days', value: fmtN(sell30.length), sub: fmt$(sell30.reduce((s,d)=>s+(+d.bucket_profit||0),0)) + ' profit', clickHandler:`showTimelineDrill('sell', 30)` }),
+    card({ label:'60 Days', value: fmtN(sell60.length), sub: fmt$(sell60.reduce((s,d)=>s+(+d.bucket_profit||0),0)) + ' profit', clickHandler:`showTimelineDrill('sell', 60)` }),
+    card({ label:'90 Days', value: fmtN(sell90.length), sub: fmt$(sell90.reduce((s,d)=>s+(+d.bucket_profit||0),0)) + ' profit', clickHandler:`showTimelineDrill('sell', 90)` })
   ].join('');
 
-  // ─── Monthly profit chart (stacked: projected/locked/realized by contract month) ───
+  // ─── Monthly chart ───
   const monthly = (state.data.monthly || []).slice(0, 12).reverse();
   makeChart('c-profit-monthly', 'bar', {
     labels: monthly.map(m => fmtMonth(m.month)),
     datasets: [
-      { label:'Projected (contracts in month)', data: monthly.map(m => +m.projected_profit||0), backgroundColor:'#fde047' },
-      { label:'Realized (closes in month)', data: monthly.map(m => +m.realized_profit||0), backgroundColor:'#10b981' }
+      { label:'Projected $ (deals contracted that month)', data: monthly.map(m => +m.projected_profit||0), backgroundColor:'#fde047' },
+      { label:'Realized $ (deals closed that month)', data: monthly.map(m => +m.realized_profit||0), backgroundColor:'#10b981' }
     ]
   }, {
     scales: {
-      x: { stacked: false, grid:{display:false}, ticks:{font:{size:10}}},
+      x: { grid:{display:false}, ticks:{font:{size:10}}},
       y: { grid:{color:'#f3f4f6'}, ticks:{font:{size:10}, callback: v => '$' + (v/1000).toFixed(0) + 'k'}}
     }
   });
 
-  // ─── Per-deal profit chart ───
-  const closedDeals = realizedAll.slice().sort((a,b) => new Date(b.actual_close_date) - new Date(a.actual_close_date)).slice(0, 30).reverse();
+  // ─── Per-deal closed chart ───
+  const closedDeals = realizedAll.slice().sort((a,b) => parseLocalDate(b.actual_close_date) - parseLocalDate(a.actual_close_date)).slice(0, 30).reverse();
   makeChart('c-profit-per-deal', 'bar', {
     labels: closedDeals.map(d => `${(d.deal_name||'—').substring(0,28)}\n${fmtDate(d.actual_close_date)}`),
     datasets: [{
@@ -999,8 +1194,8 @@ function renderProfit(range) {
     }
   });
 
-  // ─── Recently closed table (filtered to period) ───
-  const closedRows = realizedInRange.slice().sort((a,b) => new Date(b.actual_close_date) - new Date(a.actual_close_date)).map(d => `<tr>
+  // ─── Recently closed table (period) ───
+  const closedRows = realizedInRange.slice().sort((a,b) => parseLocalDate(b.actual_close_date) - parseLocalDate(a.actual_close_date)).map(d => `<tr class="row-clickable" onclick="showDealDetail('${d.airtable_record_id}')">
     <td><b>${d.deal_name||'—'}</b><div class="meta">${d.county||''}, ${d.state||''} · ${fmt1(d.acreage)} ac</div></td>
     <td>${fmtDate(d.actual_close_date)}</td>
     <td class="num">${fmt$(d.purchase_price)}</td>
@@ -1013,7 +1208,7 @@ function renderProfit(range) {
   document.getElementById('profit-closed-table').innerHTML = `<table class="dt">
     <thead><tr>
       <th>Deal / Location</th><th>Closed</th>
-      <th class="num">Purchase</th><th class="num">Sale</th><th class="num">Gross Profit</th><th class="num">Realized</th>
+      <th class="num">Purchase</th><th class="num">Sale</th><th class="num">Gross</th><th class="num">Realized</th>
       <th class="num">Days Held</th><th class="num">DoM</th>
     </tr></thead>
     <tbody>${closedRows || `<tr><td colspan="8" style="text-align:center;color:#9ca3af;padding:24px">No closes in this period. Try a wider range.</td></tr>`}</tbody>
@@ -1024,55 +1219,33 @@ function renderProfit(range) {
 // ACTIVITY TAB
 //=============================================================================
 function renderActivity(range) {
-  const quoDaily = (state.data.quoDaily || []).slice().sort((a,b) => new Date(a.date) - new Date(b.date));
-  // Filter by period
-  const inPeriod = quoDaily.filter(q => inRange(q.date, range.start, range.end));
+  const quoDaily = (state.data.quoDaily || []).slice().sort((a,b) => parseLocalDate(a.date) - parseLocalDate(b.date));
+  const inPeriod = quoDaily.filter(q => inRangeLocal(q.date, range.start, range.end));
 
   const totals = inPeriod.reduce((acc, q) => ({
     calls: (acc.calls||0) + (+q.total_calls||0),
     outbound: (acc.outbound||0) + (+q.outbound_calls||0),
     inbound: (acc.inbound||0) + (+q.inbound_calls||0),
     talkSec: (acc.talkSec||0) + (+q.talk_time_seconds||0),
-    texts: (acc.texts||0) + (+q.texts_sent||0),
-    days: new Set((acc.days||[]).concat(q.date)).size > 0 ? [...new Set((acc.days||[]).concat(q.date))] : [q.date]
+    texts: (acc.texts||0) + (+q.texts_sent||0)
   }), {});
   const daysActive = inPeriod.filter(q => +q.total_calls > 0 || +q.texts_sent > 0).length;
   const avgCalls = daysActive > 0 ? Math.round((totals.calls||0) / daysActive) : 0;
 
+  const startStr = ymd(range.start);
+  const endStr = ymd(range.end);
+
   document.getElementById('activity-summary').innerHTML = [
-    card({ label:'Total Calls', value: fmtN(totals.calls), sub:`${totals.outbound||0} out · ${totals.inbound||0} in`, icon:'📞' }),
+    card({ label:'Total Calls', value: fmtN(totals.calls), sub:`${totals.outbound||0} out · ${totals.inbound||0} in`, icon:'📞', clickHandler:`showCallsDrill('${startStr}','${endStr}','Activity in Period')` }),
     card({ label:'Talk Time', value: fmtHrs(totals.talkSec), sub:'cumulative', icon:'⏱️' }),
     card({ label:'Texts Sent', value: fmtN(totals.texts), icon:'💬' }),
     card({ label:'Avg Calls/Day Active', value: fmtN(avgCalls), sub:`${daysActive} active days` })
   ].join('');
 
-  // ─── Daily charts (last 60 days) ───
   const labels = quoDaily.map(q => fmtD(q.date));
-
-  makeChart('c-act-calls-daily', 'bar', {
-    labels,
-    datasets: [{
-      label:'Calls', data: quoDaily.map(q => +q.total_calls||0),
-      backgroundColor:'#3b82f6'
-    }]
-  });
-
-  makeChart('c-act-talk-daily', 'bar', {
-    labels,
-    datasets: [{
-      label:'Talk Hrs', data: quoDaily.map(q => +(q.talk_time_seconds||0) / 3600),
-      backgroundColor:'#10b981'
-    }]
-  });
-
-  makeChart('c-act-texts-daily', 'bar', {
-    labels,
-    datasets: [{
-      label:'Texts Sent', data: quoDaily.map(q => +q.texts_sent||0),
-      backgroundColor:'#a78bfa'
-    }]
-  });
-
+  makeChart('c-act-calls-daily', 'bar', { labels, datasets: [{ label:'Calls', data: quoDaily.map(q => +q.total_calls||0), backgroundColor:'#3b82f6' }] });
+  makeChart('c-act-talk-daily', 'bar', { labels, datasets: [{ label:'Talk Hrs', data: quoDaily.map(q => +(q.talk_time_seconds||0) / 3600), backgroundColor:'#10b981' }] });
+  makeChart('c-act-texts-daily', 'bar', { labels, datasets: [{ label:'Texts Sent', data: quoDaily.map(q => +q.texts_sent||0), backgroundColor:'#a78bfa' }] });
   makeChart('c-act-direction', 'doughnut', {
     labels: ['Outbound','Inbound','Missed'],
     datasets: [{
@@ -1087,47 +1260,45 @@ function renderActivity(range) {
 }
 
 //=============================================================================
-// DRILL-DOWN MODAL
+// DRILL-DOWN MODALS
 //=============================================================================
-function showDrillDown(bucket) {
-  const pipeline = state.data.pipeline || [];
-  let title, deals;
+function openModal(title, summary, html) {
+  document.getElementById('drill-title').textContent = title;
+  document.getElementById('drill-body').innerHTML = (summary ? `<div class="modal-summary">${summary}</div>` : '') + html;
+  document.getElementById('drill-modal').classList.add('show');
+}
+function closeDrillDown() {
+  document.getElementById('drill-modal').classList.remove('show');
+}
 
-  if (bucket === 'PROJECTED' || bucket === 'LOCKED') {
-    deals = pipeline.filter(d => d.is_active && d.profit_bucket === bucket);
-    title = `${bucket} Deals (${deals.length})`;
-  } else if (bucket === 'REALIZED') {
-    deals = pipeline.filter(d => d.profit_bucket === 'REALIZED');
-    title = `Realized Lifetime — ${deals.length} sold`;
-  } else if (bucket === 'REALIZED_ACTIVE') {
-    deals = pipeline.filter(d => d.is_active && d.profit_bucket === 'REALIZED');
-    title = `Realized (Active flag still on) — ${deals.length}`;
-  } else if (bucket === 'TERMINATED') {
-    deals = pipeline.filter(d => d.profit_bucket === 'TERMINATED');
-    title = `Terminated Lifetime — ${deals.length}`;
-  } else {
-    return;
+// Loading state in modal
+function openModalLoading(title) {
+  openModal(title, '', '<div style="text-align:center;padding:40px"><span class="spinner"></span> Loading…</div>');
+}
+
+// Generic deal table for drill modals
+function dealsTable(deals, opts = {}) {
+  if (!deals || deals.length === 0) {
+    return `<div style="text-align:center;color:#9ca3af;padding:24px">No deals found</div>`;
   }
-
-  deals = deals.slice().sort((a,b) => (+b.bucket_profit||0) - (+a.bucket_profit||0));
-  const total = deals.reduce((s,d) => s + (+d.bucket_profit||0), 0);
-
-  document.getElementById('drill-title').textContent = `${title} · Total: ${fmt$(total)}`;
-  document.getElementById('drill-body').innerHTML = `<table class="dt">
+  const showAm = opts.showAm;
+  return `<table class="dt">
     <thead><tr>
       <th>Deal / Location</th>
       <th>Phase</th>
-      <th>Strategy</th>
+      <th>Bucket</th>
+      ${showAm ? '<th>AM</th>' : ''}
       <th class="num">Purchase</th>
       <th class="num">List/Buyer</th>
       <th class="num">Profit</th>
-      <th>Contract Date</th>
-      <th>${bucket === 'REALIZED' || bucket === 'REALIZED_ACTIVE' ? 'Closed' : 'Close Date'}</th>
+      <th>Contract</th>
+      <th>Close</th>
     </tr></thead>
-    <tbody>${deals.map(d => `<tr>
+    <tbody>${deals.map(d => `<tr class="row-clickable" onclick="showDealDetail('${d.airtable_record_id}')">
       <td><b>${d.deal_name||'—'}</b><div class="meta">${d.county||''}, ${d.state||''} · ${fmt1(d.acreage)} ac</div></td>
       <td><span class="pill-phase">${d.deal_phase||'—'}</span></td>
-      <td>${d.closing_type ? `<span class="${strategyClass(d.closing_type)}">${d.closing_type}</span>` : '—'}</td>
+      <td><span class="pill-bucket-${d.profit_bucket}">${d.profit_bucket||'—'}</span></td>
+      ${showAm ? `<td>${d.acquisition_manager || '<span class="text-muted">—</span>'}</td>` : ''}
       <td class="num">${fmt$(d.purchase_price)}</td>
       <td class="num">${fmt$(d.end_buyer_contract_price || d.listing_price)}</td>
       <td class="num text-emerald"><b>${fmt$(d.bucket_profit)}</b></td>
@@ -1135,9 +1306,256 @@ function showDrillDown(bucket) {
       <td>${fmtDate(d.actual_close_date || d.end_buyer_close_date || d.close_date)}</td>
     </tr>`).join('')}</tbody>
   </table>`;
-  document.getElementById('drill-modal').classList.add('show');
 }
 
+// ─── Bucket drill-downs (PROJECTED, LOCKED, REALIZED, TERMINATED, ACTIVE) ───
+function showBucketDrill(bucket) {
+  const pipeline = state.data.pipeline || [];
+  let deals, title, summary;
+
+  if (bucket === 'ACTIVE') {
+    deals = pipeline.filter(d => d.is_active);
+    title = `All Active Deals (${deals.length})`;
+  } else if (bucket === 'PROJECTED' || bucket === 'LOCKED') {
+    deals = pipeline.filter(d => d.is_active && d.profit_bucket === bucket);
+    title = `${bucket} Deals (${deals.length})`;
+  } else if (bucket === 'REALIZED_ACTIVE') {
+    deals = pipeline.filter(d => d.is_active && d.profit_bucket === 'REALIZED');
+    title = `Realized — Active flag still on (${deals.length})`;
+  } else if (bucket === 'TERMINATED') {
+    deals = pipeline.filter(d => d.profit_bucket === 'TERMINATED');
+    title = `Terminated Lifetime (${deals.length})`;
+  }
+
+  deals = deals.slice().sort((a,b) => (+b.bucket_profit||0) - (+a.bucket_profit||0));
+  const total = deals.reduce((s,d) => s + (+d.bucket_profit||0), 0);
+  summary = `<b>${deals.length}</b> deals · Total profit: <b>${fmt$(total)}</b>`;
+  openModal(title, summary, dealsTable(deals));
+}
+
+function showRealizedYTDDrill() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const yearStart = startOfYear(today);
+  const deals = (state.data.pipeline || []).filter(d =>
+    d.profit_bucket === 'REALIZED' && d.actual_close_date && parseLocalDate(d.actual_close_date) >= yearStart
+  ).sort((a,b) => parseLocalDate(b.actual_close_date) - parseLocalDate(a.actual_close_date));
+  const total = deals.reduce((s,d) => s + (+d.bucket_profit||0), 0);
+  openModal(`Realized YTD (${today.getFullYear()})`,
+    `<b>${deals.length}</b> deals closed · Total realized: <b>${fmt$(total)}</b>`,
+    dealsTable(deals));
+}
+
+function showAllRealizedDrill() {
+  const deals = (state.data.pipeline || []).filter(d => d.profit_bucket === 'REALIZED' && d.actual_close_date)
+    .sort((a,b) => parseLocalDate(b.actual_close_date) - parseLocalDate(a.actual_close_date));
+  const total = deals.reduce((s,d) => s + (+d.bucket_profit||0), 0);
+  openModal('All Realized (Lifetime)',
+    `<b>${deals.length}</b> deals closed all-time · Total realized: <b>${fmt$(total)}</b>`,
+    dealsTable(deals));
+}
+
+function showMissingListingDrill() {
+  const deals = (state.data.pipeline || []).filter(d => 
+    d.is_active && d.profit_bucket === 'PROJECTED' && d.bucket_profit == null
+  ).sort((a,b) => (+b.purchase_price||0) - (+a.purchase_price||0));
+  const totalPurchase = deals.reduce((s,d) => s + (+d.purchase_price||0), 0);
+  openModal('Deals Missing Listing Price',
+    `<b>${deals.length}</b> deals need a Listing Price set in Airtable so projected profit can calculate. Combined purchase value: <b>${fmt$(totalPurchase)}</b>`,
+    dealsTable(deals));
+}
+
+// ─── Phase / Strategy drill-downs ───
+function showPhaseDrill(phase) {
+  const deals = (state.data.pipeline || []).filter(d => d.is_active && d.deal_phase === phase)
+    .sort((a,b) => (+b.bucket_profit||0) - (+a.bucket_profit||0));
+  const total = deals.reduce((s,d) => s + (+d.bucket_profit||0), 0);
+  openModal(`Phase: ${phase}`,
+    `<b>${deals.length}</b> deals · Total bucket profit: <b>${fmt$(total)}</b>`,
+    dealsTable(deals));
+}
+
+function showStrategyDrill(strategy) {
+  const deals = (state.data.pipeline || []).filter(d => d.is_active && (d.closing_type||'Unspecified') === strategy)
+    .sort((a,b) => (+b.bucket_profit||0) - (+a.bucket_profit||0));
+  const total = deals.reduce((s,d) => s + (+d.bucket_profit||0), 0);
+  openModal(`Strategy: ${strategy}`,
+    `<b>${deals.length}</b> deals · Total bucket profit: <b>${fmt$(total)}</b>`,
+    dealsTable(deals));
+}
+
+// ─── Timeline drill-downs ───
+function showTimelineDrill(side, days) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const end = addDays(today, days);
+  const activeP = (state.data.pipeline || []).filter(d => d.is_active);
+  let deals;
+  if (side === 'buy') {
+    deals = activeP.filter(d =>
+      d.acquisition_status !== 'Closed' && d.acquisition_status !== 'Terminated' &&
+      d.close_date && inRangeLocal(d.close_date, today, end)
+    ).sort((a,b) => parseLocalDate(a.close_date) - parseLocalDate(b.close_date));
+    const totalPurchase = deals.reduce((s,d) => s + (+d.purchase_price||0), 0);
+    openModal(`Buy-Side Closings (Next ${days} Days)`,
+      `<b>${deals.length}</b> deals · Total purchase value: <b>${fmt$(totalPurchase)}</b>`,
+      dealsTable(deals));
+  } else {
+    deals = activeP.filter(d =>
+      d.end_buyer_status && d.end_buyer_status !== 'Sold' &&
+      d.end_buyer_close_date && inRangeLocal(d.end_buyer_close_date, today, end)
+    ).sort((a,b) => parseLocalDate(a.end_buyer_close_date) - parseLocalDate(b.end_buyer_close_date));
+    const totalProfit = deals.reduce((s,d) => s + (+d.bucket_profit||0), 0);
+    openModal(`Sell-Side Closings (Next ${days} Days)`,
+      `<b>${deals.length}</b> deals · Total bucket profit: <b>${fmt$(totalProfit)}</b>`,
+      dealsTable(deals));
+  }
+}
+
+// ─── Contracts drill (deals contracted in date range) ───
+function showContractsDrill(startStr, endStr, title) {
+  const start = parseLocalDate(startStr);
+  const end = parseLocalDate(endStr);
+  end.setHours(23,59,59,999);
+  const deals = (state.data.pipeline || []).filter(d =>
+    d.contract_date && inRangeLocal(d.contract_date, start, end) &&
+    d.profit_bucket !== 'TERMINATED'
+  ).sort((a,b) => parseLocalDate(b.contract_date) - parseLocalDate(a.contract_date));
+  const totalProfit = deals.reduce((s,d) => s + (+d.bucket_profit||0), 0);
+  openModal(title,
+    `<b>${deals.length}</b> contracts · Combined profit potential: <b>${fmt$(totalProfit)}</b>`,
+    dealsTable(deals));
+}
+
+// ─── Closed drill (deals with actual_close_date in range) ───
+function showClosedDrill(startStr, endStr, title) {
+  const start = parseLocalDate(startStr);
+  const end = parseLocalDate(endStr);
+  end.setHours(23,59,59,999);
+  const deals = (state.data.pipeline || []).filter(d =>
+    d.profit_bucket === 'REALIZED' && d.actual_close_date && inRangeLocal(d.actual_close_date, start, end)
+  ).sort((a,b) => parseLocalDate(b.actual_close_date) - parseLocalDate(a.actual_close_date));
+  const totalProfit = deals.reduce((s,d) => s + (+d.bucket_profit||0), 0);
+  openModal(title,
+    `<b>${deals.length}</b> deals closed · Total realized: <b>${fmt$(totalProfit)}</b>`,
+    dealsTable(deals));
+}
+
+// ─── Funnel events drill (lead, qualified, offer) — uses v_am_funnel_events ───
+async function showFunnelEventsDrill(eventType, startStr, endStr, title) {
+  openModalLoading(title);
+  try {
+    const data = await sb(`v_am_funnel_events?event_type=eq.${eventType}&event_at=gte.${startStr}&event_at=lte.${endStr}T23:59:59&order=event_at.desc&limit=500`);
+    const sourceMix = data.reduce((acc, e) => { acc[e.lead_source||'Unknown'] = (acc[e.lead_source||'Unknown']||0) + 1; return acc; }, {});
+    const sourcesStr = Object.entries(sourceMix).sort((a,b) => b[1]-a[1]).map(([s,n]) => `${s}: ${n}`).join(' · ');
+    const summary = `<b>${data.length}</b> ${eventType} events · Source mix: ${sourcesStr || 'n/a'}<br><span style="font-size:11px;color:#9ca3af">Note: top-of-funnel events are company-wide, not AM-filtered.</span>`;
+    const html = `<table class="dt">
+      <thead><tr>
+        <th>Event Time</th>
+        <th>Deal Title</th>
+        <th>Lead Source</th>
+        <th>Owner</th>
+        ${eventType !== 'lead' ? '<th>Stage Change</th>' : ''}
+        <th class="num">Value</th>
+        <th>Pipedrive</th>
+      </tr></thead>
+      <tbody>${data.map(e => `<tr>
+        <td>${parseTimestamp(e.event_at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</td>
+        <td><b>${e.deal_title||'—'}</b></td>
+        <td>${e.lead_source||'—'}</td>
+        <td>${e.owner_name||'—'}</td>
+        ${eventType !== 'lead' ? `<td>${e.from_stage||'—'} → ${e.to_stage||'—'}</td>` : ''}
+        <td class="num">${fmt$(e.deal_value)}</td>
+        <td><a href="${e.pipedrive_url}" target="_blank">↗</a></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+    openModal(title, summary, html);
+  } catch (err) {
+    openModal(title, '', `<div class="err-banner">Failed to load: ${err.message}</div>`);
+  }
+}
+
+// ─── Terminated drill — funnel events filtered by Jonathan's deal_tracker entries ───
+async function showTerminatedDrill(startStr, endStr, title) {
+  openModalLoading(title);
+  try {
+    // Get all terminated events in range, then filter to Jonathan's deals
+    const data = await sb(`v_am_funnel_events?event_type=eq.terminated&event_at=gte.${startStr}&event_at=lte.${endStr}T23:59:59&order=event_at.desc&limit=500`);
+    const jonathanDeals = (state.data.pipeline || []).filter(d => d.profit_bucket === 'TERMINATED');
+    const jonathanIds = new Set(jonathanDeals.map(d => +d.pipedrive_deal_id).filter(Boolean));
+    // Cross-reference: events where pipedrive_deal_id is in Jonathan's terminated deals
+    const mine = data.filter(e => jonathanIds.has(+e.pipedrive_deal_id));
+    const others = data.filter(e => !jonathanIds.has(+e.pipedrive_deal_id));
+
+    const summary = `<b>${mine.length}</b> attributed to ${state.amFilter} (of ${data.length} company-wide).<br><span style="font-size:11px;color:#9ca3af">Attribution: Pipedrive deal ID matches a deal in Airtable Deal Tracker assigned to ${state.amFilter}.</span>`;
+    const renderRows = list => list.map(e => {
+      const matchedDeal = jonathanDeals.find(d => +d.pipedrive_deal_id === +e.pipedrive_deal_id);
+      return `<tr ${matchedDeal ? `class="row-clickable" onclick="showDealDetail('${matchedDeal.airtable_record_id}')"` : ''}>
+        <td>${parseTimestamp(e.event_at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</td>
+        <td><b>${matchedDeal ? matchedDeal.deal_name : e.deal_title}</b></td>
+        <td>${e.lead_source||'—'}</td>
+        <td>${e.from_stage||'—'} → ${e.to_stage||'—'}</td>
+        <td class="num">${fmt$(matchedDeal?.purchase_price || e.deal_value)}</td>
+        <td><a href="${e.pipedrive_url}" target="_blank">↗</a></td>
+      </tr>`;
+    }).join('');
+
+    const html = `
+      <h4 style="margin:8px 0;font-size:13px;font-weight:600">${state.amFilter}'s Terminated Deals (${mine.length})</h4>
+      <table class="dt"><thead><tr>
+        <th>Event Time</th><th>Deal</th><th>Lead Source</th><th>Stage Change</th><th class="num">Value</th><th>Pipedrive</th>
+      </tr></thead><tbody>${mine.length > 0 ? renderRows(mine) : `<tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:16px">None</td></tr>`}</tbody></table>
+      ${others.length > 0 ? `
+        <h4 style="margin:16px 0 8px;font-size:13px;font-weight:600;color:#6b7280">Other Terminated (${others.length})</h4>
+        <table class="dt"><thead><tr>
+          <th>Event Time</th><th>Deal</th><th>Lead Source</th><th>Stage Change</th><th class="num">Value</th><th>Pipedrive</th>
+        </tr></thead><tbody>${renderRows(others)}</tbody></table>
+      ` : ''}
+    `;
+    openModal(title, summary, html);
+  } catch (err) {
+    openModal(title, '', `<div class="err-banner">Failed to load: ${err.message}</div>`);
+  }
+}
+
+// ─── Calls drill — daily breakdown from quo_daily ───
+function showCallsDrill(startStr, endStr, title) {
+  const start = parseLocalDate(startStr);
+  const end = parseLocalDate(endStr);
+  end.setHours(23,59,59,999);
+  const days = (state.data.quoDaily || []).filter(q => inRangeLocal(q.date, start, end))
+    .sort((a,b) => parseLocalDate(b.date) - parseLocalDate(a.date));
+  const totals = days.reduce((acc, q) => ({
+    calls: (acc.calls||0) + (+q.total_calls||0),
+    talkSec: (acc.talkSec||0) + (+q.talk_time_seconds||0),
+    texts: (acc.texts||0) + (+q.texts_sent||0),
+    out: (acc.out||0) + (+q.outbound_calls||0),
+    inb: (acc.inb||0) + (+q.inbound_calls||0)
+  }), {});
+
+  const summary = `<b>${days.length}</b> days · <b>${fmtN(totals.calls)}</b> calls · <b>${fmtHrs(totals.talkSec)}</b> talk · <b>${fmtN(totals.texts)}</b> texts<br><span style="font-size:11px;color:#9ca3af">Note: Quo data syncs weekly. Days after the most recent sync show 0 calls. <a href="#" onclick="alert('Will be fixed in Phase 3 with Quo webhooks.');return false;" style="color:#9ca3af;text-decoration:underline">Why?</a></span>`;
+  const html = `<table class="dt">
+    <thead><tr>
+      <th>Date</th>
+      <th class="num">Total Calls</th>
+      <th class="num">Outbound</th>
+      <th class="num">Inbound</th>
+      <th class="num">Talk Time</th>
+      <th class="num">Texts Sent</th>
+      <th class="num">Voicemails</th>
+    </tr></thead>
+    <tbody>${days.length === 0 ? `<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:16px">No activity in this period</td></tr>` : days.map(q => `<tr>
+      <td><b>${fmtDate(q.date)}</b></td>
+      <td class="num">${fmtN(q.total_calls)}</td>
+      <td class="num">${fmtN(q.outbound_calls)}</td>
+      <td class="num">${fmtN(q.inbound_calls)}</td>
+      <td class="num">${fmt2((+q.talk_time_seconds||0)/3600)} hrs</td>
+      <td class="num">${fmtN(q.texts_sent)}</td>
+      <td class="num">${fmtN(q.voicemails_left)}</td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+  openModal(title, summary, html);
+}
+
+// ─── Deal detail (full info) ───
 function showDealDetail(airtableId) {
   const d = (state.data.pipeline || []).find(x => x.airtable_record_id === airtableId);
   if (!d) return;
@@ -1163,7 +1581,7 @@ function showDealDetail(airtableId) {
       <tbody>
         <tr><td><b>Purchase Price</b></td><td class="num">${fmt$(d.purchase_price)}</td></tr>
         <tr><td><b>EMD</b></td><td class="num">${fmt$(d.emd_amount)} ${d.emd_deposited?'(deposited)':'(not deposited)'}</td></tr>
-        <tr><td><b>Listing Price</b></td><td class="num">${fmt$(d.listing_price)}</td></tr>
+        <tr><td><b>Listing Price</b></td><td class="num">${d.listing_price ? fmt$(d.listing_price) : '<span class="text-rose">missing</span>'}</td></tr>
         <tr><td><b>End Buyer Contract</b></td><td class="num">${fmt$(d.end_buyer_contract_price)}</td></tr>
         <tr><td><b>Actual Sale Price</b></td><td class="num">${fmt$(d.actual_sale_price)}</td></tr>
         <tr><td><b>Bucket Profit</b></td><td class="num text-emerald"><b>${fmt$(d.bucket_profit)}</b></td></tr>
@@ -1186,10 +1604,6 @@ function showDealDetail(airtableId) {
     ${d.listing_url ? `<div style="margin-top:16px"><a class="btn-primary" style="display:inline-block;text-decoration:none;color:white" href="${d.listing_url}" target="_blank">View Listing ↗</a></div>` : ''}
   `;
   document.getElementById('drill-modal').classList.add('show');
-}
-
-function closeDrillDown() {
-  document.getElementById('drill-modal').classList.remove('show');
 }
 
 //=============================================================================
@@ -1217,11 +1631,8 @@ function setPeriod(p) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Tabs
   document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
-  // Period
   document.querySelectorAll('.filter-btn').forEach(b => b.addEventListener('click', () => setPeriod(b.dataset.period)));
-  // Custom dates
   document.getElementById('custom-start').addEventListener('change', e => {
     state.customStart = e.target.value;
     if (state.period === 'custom' && state.customStart && state.customEnd) renderAll();
@@ -1230,28 +1641,21 @@ document.addEventListener('DOMContentLoaded', () => {
     state.customEnd = e.target.value;
     if (state.period === 'custom' && state.customStart && state.customEnd) renderAll();
   });
-  // AM filter
   document.getElementById('am-filter').addEventListener('change', e => {
     state.amFilter = e.target.value;
     loadAll();
   });
-  // Refresh
   document.getElementById('refresh-btn').addEventListener('click', loadAll);
-  // Auto-refresh
   document.getElementById('auto-refresh').addEventListener('change', e => {
     if (state.autoTimer) clearInterval(state.autoTimer);
     if (e.target.checked) state.autoTimer = setInterval(loadAll, CONFIG.AUTO_REFRESH_MINUTES * 60 * 1000);
   });
-  // Drill-down close
   document.getElementById('drill-close').addEventListener('click', closeDrillDown);
   document.getElementById('drill-modal').addEventListener('click', e => {
     if (e.target.id === 'drill-modal') closeDrillDown();
   });
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeDrillDown();
-  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrillDown(); });
 
-  // Initial load
   loadAll();
   state.autoTimer = setInterval(loadAll, CONFIG.AUTO_REFRESH_MINUTES * 60 * 1000);
 });
