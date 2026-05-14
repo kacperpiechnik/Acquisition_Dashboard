@@ -467,7 +467,7 @@ async function loadAll() {
       sb(`v_active_listings?acquisition_manager=eq.${am}&order=date_listed.desc.nullslast`),
       sb(`v_closed_deals_summary?acquisition_manager=eq.${am}&order=close_month.desc`),
       sb('kpi_thresholds'),
-      sb(`quo_daily?user_name=eq.${am}&order=date.desc&limit=60`)
+      sb(`v_quo_daily_unified?user_name=eq.${am}&order=date.desc&limit=60`)
     ]);
 
     state.data = { pipeline, weekly, monthly, listings, closedSummary, thresholds, quoDaily };
@@ -1383,7 +1383,7 @@ function renderActivity(range) {
       <th class="num">Texts Recvd</th>
       <th class="num">Voicemails</th>
     </tr></thead>
-    <tbody>${tableRows || `<tr><td colspan="10" style="text-align:center;color:#9ca3af;padding:24px">No activity data in this period (Quo sync runs weekly — last sync: Apr 26)</td></tr>`}</tbody>
+    <tbody>${tableRows || `<tr><td colspan="10" style="text-align:center;color:#9ca3af;padding:24px">No activity data in this period</td></tr>`}</tbody>
   </table>`;
 
   const labels = quoDaily.map(q => fmtD(q.date));
@@ -1745,7 +1745,7 @@ function showCallsDrill(startStr, endStr, title) {
     inb: (acc.inb||0) + (+q.inbound_calls||0)
   }), {});
 
-  const summary = `<b>${days.length}</b> days · <b>${fmtN(totals.calls)}</b> calls · <b>${fmtHrs(totals.talkSec)}</b> talk · <b>${fmtN(totals.texts)}</b> texts<br><span style="font-size:11px;color:#9ca3af">Note: Quo data syncs weekly. Days after the most recent sync show 0 calls. <a href="#" onclick="alert('Will be fixed in Phase 3 with Quo webhooks.');return false;" style="color:#9ca3af;text-decoration:underline">Why?</a></span>`;
+  const summary = `<b>${days.length}</b> days · <b>${fmtN(totals.calls)}</b> calls · <b>${fmtHrs(totals.talkSec)}</b> talk · <b>${fmtN(totals.texts)}</b> texts<br><span style="font-size:11px;color:#9ca3af">Real-time data via Quo webhooks. Historical dates before the cutover come from the legacy CSV import.</span>`;
   const html = `<table class="dt">
     <thead><tr>
       <th>Date</th>
