@@ -616,6 +616,8 @@ function renderPulse(range) {
     closed: (a.closed||0) + (+w.deals_closed||0),
     realized: (a.realized||0) + (+w.realized_profit||0),
     calls: (a.calls||0) + (+w.total_calls||0),
+    outbound: (a.outbound||0) + (+w.outbound_calls||0),
+    inbound: (a.inbound||0) + (+w.inbound_calls||0),
     talkHrs: (a.talkHrs||0) + (+w.talk_time_hours||0),
     texts: (a.texts||0) + (+w.texts_sent||0),
     leads: (a.leads||0) + (+w.new_leads||0),
@@ -722,9 +724,9 @@ function renderPulse(range) {
   // ─── Activity in Period ───
   document.getElementById('pulse-week').innerHTML = [
     card({
-      label:'Calls',
-      value: fmtN(periodTotals.calls),
-      sub: `${fmt1(periodTotals.talkHrs||0)} hrs talk`,
+      label:'Dials (Outbound)',
+      value: fmtN(periodTotals.outbound),
+      sub: `${fmtN(periodTotals.inbound)} inbound · ${fmt1(periodTotals.talkHrs||0)} hrs talk`,
       icon:'📞',
       clickHandler:`showCallsDrill('${startStr}','${endStr}','Call Activity in Period')`
     }),
@@ -887,7 +889,8 @@ function renderPerformance(range) {
     const oc = w.new_contracts > 0 ? (+w.offers_made / +w.new_contracts).toFixed(1) + 'x' : '—';
     return `<tr>
       <td><b>${fmtD(w.week_start)}</b></td>
-      <td class="num"><a href="#" onclick="showCallsDrill('${w.week_start}','${wEnd}','Calls — Week of ${fmtD(w.week_start)}');return false;">${fmtN(w.total_calls)}</a></td>
+      <td class="num"><a href="#" onclick="showCallsDrill('${w.week_start}','${wEnd}','Calls — Week of ${fmtD(w.week_start)}');return false;">${fmtN(w.outbound_calls)}</a></td>
+      <td class="num text-muted">${fmtN(w.inbound_calls)}</td>
       <td class="num">${fmt2(w.talk_time_hours)}</td>
       <td class="num">${fmtN(w.texts_sent)}</td>
       <td class="num"><a href="#" onclick="showFunnelEventsDrill('lead','${w.week_start}','${wEnd}','Leads — Week of ${fmtD(w.week_start)}');return false;">${fmtN(w.new_leads)}</a></td>
@@ -906,7 +909,8 @@ function renderPerformance(range) {
   document.getElementById('perf-ledger').innerHTML = `<table class="dt">
     <thead><tr>
       <th>Week</th>
-      <th class="num">Calls</th>
+      <th class="num" title="Outbound calls — how many times we dialed">Dials</th>
+      <th class="num" title="Inbound calls received">In</th>
       <th class="num">Talk Hrs</th>
       <th class="num">Texts</th>
       <th class="num">Leads</th>
@@ -921,7 +925,7 @@ function renderPerformance(range) {
       <th class="num">Realized</th>
       <th class="num">Talk/Contract</th>
     </tr></thead>
-    <tbody>${rows || `<tr><td colspan="15" style="text-align:center;color:#9ca3af;padding:24px">No weeks in this period</td></tr>`}</tbody>
+    <tbody>${rows || `<tr><td colspan="16" style="text-align:center;color:#9ca3af;padding:24px">No weeks in this period</td></tr>`}</tbody>
   </table>`;
 
   // ─── Conversion funnel (period aggregate) ───
@@ -1351,10 +1355,10 @@ function renderActivity(range) {
   const endStr = ymd(range.end);
 
   document.getElementById('activity-summary').innerHTML = [
-    card({ label:'Total Calls', value: fmtN(totals.calls), sub:`${totals.outbound||0} out · ${totals.inbound||0} in`, icon:'📞', clickHandler:`showCallsDrill('${startStr}','${endStr}','Activity in Period')` }),
-    card({ label:'Talk Time', value: fmtHrs(totals.talkSec), sub:'cumulative', icon:'⏱️' }),
-    card({ label:'Texts Sent', value: fmtN(totals.texts), icon:'💬' }),
-    card({ label:'Avg Calls/Day Active', value: fmtN(avgCalls), sub:`${daysActive} active days` })
+    card({ label:'Dials (Outbound)', value: fmtN(totals.outbound), sub:'how many times we dialed', icon:'📞', clickHandler:`showCallsDrill('${startStr}','${endStr}','Activity in Period')` }),
+    card({ label:'Inbound Calls', value: fmtN(totals.inbound), sub:'calls received', icon:'📲', clickHandler:`showCallsDrill('${startStr}','${endStr}','Activity in Period')` }),
+    card({ label:'Talk Time', value: fmtHrs(totals.talkSec), sub:`${fmtN(totals.calls)} total calls`, icon:'⏱️' }),
+    card({ label:'Texts Sent', value: fmtN(totals.texts), icon:'💬' })
   ].join('');
 
   // ─── Daily activity table (newest first) ───
